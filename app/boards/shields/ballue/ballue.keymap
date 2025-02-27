@@ -1,0 +1,38 @@
+/*
+ * Copyright (c) 2021 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/pointing.h>
+#include <dt-bindings/zmk/mouse.h>
+
+#define LOWER 1
+#define RAISE 2
+
+#define L_MB4 &lt LOWER MB4
+#define R_MB5 &lt RAISE MB5
+
+/ {
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                L_MB4      &mkp MB1     &mkp MB2     R_MB5
+            >;
+        };
+        lower_layer {
+            bindings = <
+                &trans      &trans      &kp LC(W)    &kp LCTRL
+            >;
+        };
+        raise_layer {
+            bindings = <
+                &trans      &trans      &trans   &trans
+            >;
+        };
+    };
+};
