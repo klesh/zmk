@@ -1,0 +1,16 @@
+# Copyright (c) 2024, The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Input Processor for thresholding values
+
+compatible: "zmk,input-processor-thresholder"
+
+include: ip_one_param.yaml
+
+properties:
+  type:
+    type: int
+    required: true
+  codes:
+    type: array
+    required: true
