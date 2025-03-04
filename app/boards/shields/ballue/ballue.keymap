@@ -30,9 +30,14 @@
             key-positions = <2 3>;
             bindings = <&kp LC(W)>;
         };
-        combo_bootloader {
+        combo_studio {
             timeout-ms = <100>;
             key-positions = <1 2 3>;
+            bindings = <&studio_unlock>;
+        };
+        combo_bootloader {
+            timeout-ms = <100>;
+            key-positions = <0 1 2 3>;
             bindings = <&bootloader>;
         };
     };
@@ -52,17 +57,17 @@
 
         default_layer {
             bindings = <
-                LHT         &mkp MB1        &mkp MB2        RHT
+                LHT                 &mkp MB1                &mkp MB2        RHT
             >;
         };
         lower_layer {
             bindings = <
-                &none       &kp LC(W)       &mkp MB4        &mkp MB5
+                &none               &trans                  &mkp MB4        &mkp MB5
             >;
         };
         raise_layer {
             bindings = <
-                &ccpi CCPI_PREV     &ccpi CCPI_NEXT          &trans          &none
+                &ccpi CCPI_PREV     &ccpi CCPI_NEXT         &trans          &none
             >;
         };
     };
