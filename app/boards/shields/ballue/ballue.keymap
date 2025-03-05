@@ -49,6 +49,7 @@
             device = <&trackball>;
             cpis = <200 400 600 800 1000 1600 2400 3200>;
             initial-cpi-index = <2>;
+            display-name = "CPI";
         };
     };
 
@@ -57,12 +58,12 @@
 
         default_layer {
             bindings = <
-                LHT                 &mkp MB1                &mkp MB2        RHT
+                LHT                 &kp LMB                 &kp RMB        RHT
             >;
         };
         lower_layer {
             bindings = <
-                &none               &trans                  &mkp MB4        &mkp MB5
+                &none               &trans                  &kp BMB        &kp FMB
             >;
         };
         raise_layer {
