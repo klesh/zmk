@@ -1,0 +1,11 @@
+file_format: "1"
+id: cradiofs
+name: CradioFS/SweepFS
+type: shield
+url: https://github.com/klesh/SweepFS
+requires: [pro_micro]
+features:
+  - keys
+siblings:
+  - cradiofs_left
+  - cradiofs_right

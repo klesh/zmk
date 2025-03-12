@@ -1,0 +1,19 @@
+# Copyright (c) 2020 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+if SHIELD_CRADIOFS_LEFT
+
+config ZMK_KEYBOARD_NAME
+    default "CradioFS"
+
+config ZMK_SPLIT_ROLE_CENTRAL
+    default y
+
+endif
+
+if SHIELD_CRADIOFS_LEFT || SHIELD_CRADIOFS_RIGHT
+
+config ZMK_SPLIT
+    default y
+
+endif
