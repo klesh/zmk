@@ -14,11 +14,11 @@
 ```
 cd app
 # default
-west build -b nice_nano_v2 -- -DSHIELD=ballue
+west build -b nice_nano_v2 -- -DSHIELD=ballkey_clunky
 # USB logging
-west build -b nice_nano_v2 -S zmk-usb-logging -- -DSHIELD=ballue
+west build -b nice_nano_v2 -S zmk-usb-logging -- -DSHIELD=ballkey_clunky
 # ZMK Studio
-west build -p -b nice_nano_v2 -S zmk-usb-logging -S studio-rpc-usb-uart -- -DSHIELD=ballue -DCONFIG_ZMK_STUDIO=y
+west build -p -b nice_nano_v2 -S zmk-usb-logging -S studio-rpc-usb-uart -- -DSHIELD=ballkey_clunky -DCONFIG_ZMK_STUDIO=y
 ```
 11. flash:
 ```
