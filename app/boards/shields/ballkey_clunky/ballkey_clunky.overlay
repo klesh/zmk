@@ -115,8 +115,8 @@
     };
 };
 
-// #include <input/processors.dtsi>
-// #include <dt-bindings/zmk/input_transform.h>
+#include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
 
 / {
     trackball_listener {
