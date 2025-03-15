@@ -1,0 +1,11 @@
+file_format: "1"
+id: ballkey_clunky
+name: Ballkey Clunky
+type: shield
+url: https://github.com/klesh/ballkey
+requires: [pro_micro]
+exposes: [i2c_oled]
+features:
+  - keys
+  - display
+  - studio

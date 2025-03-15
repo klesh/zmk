@@ -3,9 +3,9 @@
 #include <physical_layouts.dtsi>
 
 / {
-    ballue_physical_layout: ballue_physical_layout {
+    ballkey_clunky_physical_layout: ballkey_clunky_physical_layout {
         compatible = "zmk,physical-layout";
-        display-name = "BallUE";
+        display-name = "Ballkey Clunky";
         transform = <&default_transform>;
         kscan = <&kscan0>;
         keys  //                     w   h    x    y     rot    rx    ry
