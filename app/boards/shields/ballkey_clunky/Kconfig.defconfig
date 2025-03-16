@@ -1,6 +1,6 @@
 # 第二个 Kconfig 文件：设定 shield 的配置项及默认值
 
-if SHIELD_BALLKEY_CLUNKY # 有 if 判断，说明所有的 Kconfig 都会被遍历加载
+if SHIELD_BALLKEY_CLUNKY
 
 config ZMK_KEYBOARD_NAME
     default "Ballkey Clunky"
