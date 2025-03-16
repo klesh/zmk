@@ -9,9 +9,11 @@
 #include <dt-bindings/zmk/pointing.h>
 #include <dt-bindings/zmk/mouse.h>
 #include <dt-bindings/zmk/cycle_cpi.h>
+#include <dt-bindings/zmk/bt.h>
 
 #define LOWER 1
 #define RAISE 2
+#define BLE 3
 
 #define LHT &lt LOWER LEFT
 #define RHT &lt RAISE RIGHT
@@ -27,7 +29,7 @@
         combo_ctrlw {
             timeout-ms = <50>;
             key-positions = <2 3>;
-            bindings = <&kp LC(W)>;
+            bindings = <&mo BLE>;
         };
         combo_studio {
             timeout-ms = <100>;
@@ -68,6 +70,11 @@
         raise_layer {
             bindings = <
                 &ccpi CCPI_PREV     &ccpi CCPI_NEXT         &trans          &none
+            >;
+        };
+        ble_layer {
+            bindings = <
+                &bt BT_NXT          &bt BT_CLR            &none           &none
             >;
         };
     };
