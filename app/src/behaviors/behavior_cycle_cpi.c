@@ -12,6 +12,7 @@
 
 #include <zmk/behavior.h>
 #include <dt-bindings/zmk/cycle_cpi.h>
+#include <zmk/events/cpi_state_changed.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -67,12 +68,14 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     struct cycle_cpi_data *data = dev->data;
 
     data->cpi_idx = (data->cpi_idx + delta) % cfg->cpis_len;
-    struct sensor_value val = {.val1 = cfg->cpis[data->cpi_idx], .val2 = 0};
+    uint16_t cpi = cfg->cpis[data->cpi_idx];
+    struct sensor_value val = {.val1 = cpi, .val2 = 0};
     int err = sensor_attr_set(cfg->device, cfg->sensor_channel, cfg->sensor_attr, &val);
     if (err) {
         LOG_ERR("Failed to set CPI");
         return err;
     }
+    raise_zmk_cpi_state_changed((struct zmk_cpi_state_changed){.cpi = cpi});
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
