@@ -664,6 +664,9 @@ config FPU
 config ZMK_WPM
     bool "Calculate WPM"
 
+config ZMK_CPI
+    bool "Sensor CPI"
+
 config ZMK_KEYMAP_SENSORS
     bool "Enable Keymap Sensors support"
     default y

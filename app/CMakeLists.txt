@@ -38,6 +38,7 @@ target_sources_ifdef(CONFIG_ZMK_GPIO_KEY_WAKEUP_TRIGGER app PRIVATE src/gpio_key
 target_sources(app PRIVATE src/events/activity_state_changed.c)
 target_sources(app PRIVATE src/events/position_state_changed.c)
 target_sources(app PRIVATE src/events/sensor_event.c)
+target_sources_ifdef(CONFIG_ZMK_CPI app PRIVATE src/events/cpi_state_changed.c)
 target_sources_ifdef(CONFIG_ZMK_WPM app PRIVATE src/events/wpm_state_changed.c)
 target_sources_ifdef(CONFIG_USB_DEVICE_STACK app PRIVATE src/events/usb_conn_state_changed.c)
 target_sources(app PRIVATE src/behaviors/behavior_reset.c)

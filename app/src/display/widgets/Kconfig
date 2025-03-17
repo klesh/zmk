@@ -36,4 +36,10 @@ config ZMK_WIDGET_WPM_STATUS
     select LV_USE_LABEL
     select ZMK_WPM
 
+config ZMK_WIDGET_CPI_STATUS
+    bool "Widget for displaying current CPI value"
+    depends on !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
+    select LV_USE_LABEL
+    select ZMK_CPI
+
 endmenu
