@@ -1,0 +1,134 @@
+/* 第三个文件：定义键盘的扫描方式和键位映射 */ 
+/* 语法参考： https://docs.zephyrproject.org/latest/build/dts/intro-syntax-structure.html */
+
+#include <dt-bindings/zmk/matrix_transform.h>
+#include "ballkey_clunky_layouts.dtsi"
+
+/ {
+
+    chosen {
+        zmk,kscan = &kscan0;
+        zmk,physical-layout = &ballkey_clunky_physical_layout;
+        zephyr,display = &oled;
+    };
+
+    default_transform: keymap_transform_0 { /* 将 scan 和到的 matrix 转换成 keymap。比如扫描矩阵可能是 6x6，但键盘的布局可能是 3x12, 此时需要映射 */
+        compatible = "zmk,matrix-transform";
+        columns = <4>;
+        rows = <1>;
+        map = <
+            RC(0,0)  RC(0,1)  RC(0,2)  RC(0,3)
+        >;
+    };
+
+    kscan0: kscan_0 { /* node-label: node-name@node-addr  其中 node-label 可以定义多个，后面可以用 <&kscan0> 来引用这个 node */
+        compatible = "zmk,kscan-gpio-direct";  /* property = value; 其中 value 可以是字符 "string" 字节数据 [0x01 0x02] 等，注意要用;号结尾 */
+        wakeup-source; /* 标记为唤醒源？ */
+        input-gpios = 
+          <&pro_micro 19 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* <&phandles> 指向 node 的指针。具体 pro_micro 应该是 zmk 内置的 node-label */
+          <&pro_micro 18 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* 第二个元素是数字说明 pro_micro 是一个数组, 而数字是下标。 */
+          <&pro_micro 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* 括号是设定 node 的 properties, 其中 GPIO_ACTIVE_LOW 意为低电平触发，GPIO_PULL_UP 为默认上拉 */
+          <&pro_micro 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; /* 数组用,号隔开;号结尾  */
+    };
+
+};
+
+&ballkey_clunky_physical_layout{
+    transform = <&default_transform>;
+};
+
+
+&pinctrl {
+    spi2_default: spi2_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 22)>,
+                <NRF_PSEL(SPIM_MOSI, 1, 0)>,
+                <NRF_PSEL(SPIM_MISO, 1, 0)>;
+        };
+    };
+
+    spi2_sleep: spi2_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 22)>,
+                <NRF_PSEL(SPIM_MOSI, 1, 0)>,
+                <NRF_PSEL(SPIM_MISO, 1, 0)>;
+            low-power-enable;
+        };
+    };
+
+    i2c0_default: i2c0_default {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SDA, 0, 8)>,
+                <NRF_PSEL(TWIM_SCL, 0, 6)>;
+        };
+    };
+
+    i2c0_sleep: i2c0_sleep {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SDA, 0, 8)>,
+                <NRF_PSEL(TWIM_SCL, 0, 6)>;
+            low-power-enable;
+        };
+    };
+};
+
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+&spi2 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi2_default>;
+    pinctrl-1 = <&spi2_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 20 GPIO_ACTIVE_LOW>;
+
+    trackball: trackball@0 {
+        status = "okay";
+        compatible = "pixart,pmw3610";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio0 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        cpi = <600>;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+    };
+};
+
+&pro_micro_i2c {
+    status = "okay";
+
+    oled: ssd1306@3c {
+        compatible = "solomon,ssd1306fb";
+        reg = <0x3c>;
+        width = <128>;
+        height = <32>;
+        segment-offset = <0>;
+        page-offset = <0>;
+        display-offset = <0>;
+        multiplex-ratio = <31>;
+        segment-remap;
+        com-invdir;
+        com-sequential;
+        inversion-on;
+        prechargep = <0x22>;
+    };
+};
+
+#include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
+
+/ {
+    trackball_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackball>;
+        scroller {
+            layers = <1>;
+            input-processors = 
+                <&zip_xy_transform INPUT_TRANSFORM_Y_INVERT>,
+                // <&zip_xy_thresholder 12>,
+                <&zip_xy_scaler 1 12>,
+                <&zip_xy_to_scroll_mapper>;
+        };
+    };
+};
