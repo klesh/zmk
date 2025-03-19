@@ -54,9 +54,42 @@ struct cycle_cpi_config {
 
 struct cycle_cpi_data {
     uint8_t cpi_idx;
+    struct k_work_delayable work;
+    const struct device *dev;
 };
 
-static int behavior_cycle_cpi_init(const struct device *dev) { return 0; };
+static int set_cpi(const struct cycle_cpi_config *cfg, uint16_t cpi) {
+    struct sensor_value val = {.val1 = cpi, .val2 = 0};
+    int err = sensor_attr_set(cfg->device, cfg->sensor_channel, cfg->sensor_attr, &val);
+    if (err) {
+        LOG_ERR("Failed to set CPI");
+        return err;
+    }
+    raise_zmk_cpi_state_changed((struct zmk_cpi_state_changed){.cpi = cpi});
+    return 0;
+}
+
+static void cycle_cpi_async_init(struct k_work *work) {
+    LOG_INF("cycle_cpi_async_init");
+    // set_cpi(800);
+    struct k_work_delayable *dwork = CONTAINER_OF(work, struct k_work_delayable, work);
+    struct cycle_cpi_data *data = CONTAINER_OF(dwork, struct cycle_cpi_data, work);
+
+    const struct device *dev = data->dev;
+
+    const struct cycle_cpi_config *cfg = dev->config;
+    set_cpi(cfg, 800);
+}
+
+// SYS_INIT(cycle_cpi_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+static int behavior_cycle_cpi_init(const struct device *dev) {
+    struct cycle_cpi_data *drv_data = dev->data;
+
+    drv_data->dev = dev;
+    k_work_init_delayable(&drv_data->work, cycle_cpi_async_init);
+    k_work_schedule(&drv_data->work, K_MSEC(3000));
+    return 0;
+};
 
 static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
                                      struct zmk_behavior_binding_event event) {
@@ -69,13 +102,10 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
 
     data->cpi_idx = (data->cpi_idx + delta) % cfg->cpis_len;
     uint16_t cpi = cfg->cpis[data->cpi_idx];
-    struct sensor_value val = {.val1 = cpi, .val2 = 0};
-    int err = sensor_attr_set(cfg->device, cfg->sensor_channel, cfg->sensor_attr, &val);
+    int err = set_cpi(cfg, cpi);
     if (err) {
-        LOG_ERR("Failed to set CPI");
         return err;
     }
-    raise_zmk_cpi_state_changed((struct zmk_cpi_state_changed){.cpi = cpi});
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
