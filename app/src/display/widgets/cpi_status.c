@@ -20,14 +20,21 @@ struct cpi_status_state {
 
 struct cpi_status_state cpi_status_get_state(const zmk_event_t *eh) {
     const struct zmk_cpi_state_changed *data = as_zmk_cpi_state_changed(eh);
+    if (data == NULL) {
+        return (struct cpi_status_state){.cpi = 0};
+    }
     return (struct cpi_status_state){.cpi = data->cpi};
 };
 
 void set_cpi_symbol(lv_obj_t *label, struct cpi_status_state state) {
-    char text[6] = {};
-
     LOG_DBG("cpi changed to %i", state.cpi);
-    snprintf(text, sizeof(text), "%i", state.cpi);
+
+    char text[6] = {};
+    if (state.cpi > 0) {
+        snprintf(text, sizeof(text), "%i", state.cpi);
+    } else {
+        text[0] = '\0';
+    }
 
     lv_label_set_text(label, text);
     lv_obj_align(label, LV_ALIGN_BOTTOM_RIGHT, 0, 0);

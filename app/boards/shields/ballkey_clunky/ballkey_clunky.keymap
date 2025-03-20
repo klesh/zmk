@@ -49,7 +49,7 @@
             #binding-cells = <1>;
             device = <&trackball>;
             cpis = <200 400 600 800 1000 1600 2400 3200>;
-            initial-cpi-index = <2>;
+            default-cpi-index = <2>;
             display-name = "CPI";
         };
     };
@@ -64,7 +64,7 @@
         };
         lower_layer {
             bindings = <
-                &none               &trans                  &kp BMB        &kp FMB
+                &none               &trans                  &kp BMB        &kp LC(W)
             >;
         };
         raise_layer {

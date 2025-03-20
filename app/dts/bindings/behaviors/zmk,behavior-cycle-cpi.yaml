@@ -22,7 +22,11 @@ properties:
   cpis:
     type: array
     required: true
-  initial-cpi-index:
+  default-cpi-index:
     type: int
     required: true
-    default: 0
+    default: 2
+  init-delay:
+    type: int
+    required: false
+    default: 3000
