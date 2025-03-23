@@ -57,12 +57,12 @@ struct cycle_cpi_config {
 
 struct cycle_cpi_data {
     uint8_t cpi_idx;
-    // #if IS_ENABLED(CONFIG_SETTINGS)
+#if IS_ENABLED(CONFIG_SETTINGS)
     struct k_work_delayable init_work;
     struct k_work_delayable setup_work;
     struct k_work_delayable save_work;
     const struct device *behavior;
-    // #endif
+#endif
 };
 
 struct cycle_cpi_setting_cb_param {
@@ -82,7 +82,7 @@ static int set_cpi(const struct cycle_cpi_config *cfg, uint16_t cpi) {
     return 0;
 }
 
-// #if IS_ENABLED(CONFIG_SETTINGS)
+#if IS_ENABLED(CONFIG_SETTINGS)
 
 static int cycle_cpi_settings_load_cb(const char *key, size_t len, settings_read_cb read_cb,
                                       void *cb_arg, void *param) {
@@ -110,15 +110,6 @@ static int cycle_cpi_settings_load_cb(const char *key, size_t len, settings_read
     return ret;
 }
 
-// static void cycle_cpi_setup_work_handler(struct k_work *work) {
-//     LOG_DBG("device initial cpi setup");
-//     struct k_work_delayable *dwork = CONTAINER_OF(work, struct k_work_delayable, work);
-//     struct cycle_cpi_data *data = CONTAINER_OF(dwork, struct cycle_cpi_data, init_work);
-//     const struct cycle_cpi_config *cfg = data->behavior->config;
-//     uint16_t cpi = cfg->cpis[data->cpi_idx];
-//     LOG_DBG("setting initial cpi to %d for %s", cpi, cfg->device->name);
-// }
-
 static void cycle_cpi_save_work_handler(struct k_work *work) {
     struct k_work_delayable *dwork = CONTAINER_OF(work, struct k_work_delayable, work);
     struct cycle_cpi_data *data = CONTAINER_OF(dwork, struct cycle_cpi_data, save_work);
@@ -129,7 +120,7 @@ static void cycle_cpi_save_work_handler(struct k_work *work) {
     LOG_DBG("saving setting %s to %d", setting_name, data->cpi_idx);
     settings_save_one(setting_name, &data->cpi_idx, sizeof(data->cpi_idx));
 }
-// #endif
+#endif
 
 static void cycle_cpi_init_work_handler(struct k_work *work) {
     LOG_DBG("async init");
@@ -137,6 +128,10 @@ static void cycle_cpi_init_work_handler(struct k_work *work) {
     struct cycle_cpi_data *data = CONTAINER_OF(dwork, struct cycle_cpi_data, init_work);
     const struct cycle_cpi_config *cfg = data->behavior->config;
     const struct device *device = cfg->device;
+
+    // reset to default
+    uint16_t default_cpi = cfg->cpis[cfg->default_cpi_index];
+    set_cpi(cfg, default_cpi);
 
     // load setting
     char setting_name[32];
@@ -147,7 +142,7 @@ static void cycle_cpi_init_work_handler(struct k_work *work) {
 
 static int behavior_cycle_cpi_init(const struct device *dev) {
     LOG_DBG("init");
-    // #if IS_ENABLED(CONFIG_SETTINGS)
+#if IS_ENABLED(CONFIG_SETTINGS)
     const struct cycle_cpi_config *cfg = dev->config;
     struct cycle_cpi_data *data = dev->data;
     data->behavior = dev;
@@ -155,7 +150,7 @@ static int behavior_cycle_cpi_init(const struct device *dev) {
     k_work_init_delayable(&data->save_work, cycle_cpi_save_work_handler);
     LOG_DBG("schedule async intialization, dealy %d", cfg->init_delay);
     k_work_schedule(&data->init_work, K_MSEC(cfg->init_delay));
-    // #endif
+#endif
     return 0;
 };
 
@@ -174,10 +169,9 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     if (err) {
         return err;
     }
-    // #if IS_ENABLED(CONFIG_SETTINGS)
-    // k_work_reschedule(&data->save_work, K_MSEC(CONFIG_ZMK_SETTINGS_SAVE_DEBOUNCE));
-    k_work_reschedule(&data->save_work, K_MSEC(1000));
-    // #endif
+#if IS_ENABLED(CONFIG_SETTINGS)
+    k_work_reschedule(&data->save_work, K_MSEC(5000));
+#endif
     return ZMK_BEHAVIOR_OPAQUE;
 }
 
