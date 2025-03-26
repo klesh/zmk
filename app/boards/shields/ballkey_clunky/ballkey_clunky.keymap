@@ -1,0 +1,107 @@
+/*
+ * Copyright (c) 2021 The ZMK Contributors
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/pointing.h>
+#include <dt-bindings/zmk/mouse.h>
+#include <dt-bindings/zmk/cycle_cpi.h>
+#include <dt-bindings/zmk/bt.h>
+
+#define LOWER 1
+#define RAISE 2
+#define BLE 3
+
+/ {
+    behaviors {
+        ht: hold_tap {
+            label = "hold_tap";
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "balanced";
+            tapping-term-ms = <220>;
+            quick-tap-ms = <200>;
+            bindings = <&kp>, <&kp>;
+        };
+        lt: layer_tap {
+            compatible = "zmk,behavior-hold-tap";
+            label = "LAYER_TAP";
+            #binding-cells = <2>;
+            tapping-term-ms = <200>;
+            quick-tap-ms = <200>;
+            bindings = <&mo>, <&kp>;
+        };
+        ltm: layer_tap {
+            compatible = "zmk,behavior-hold-tap";
+            label = "LAYER_TAP";
+            #binding-cells = <2>;
+            tapping-term-ms = <200>;
+            quick-tap-ms = <200>;
+            bindings = <&mo>, <&mkp>;
+        };
+    };
+
+    combos {
+        compatible = "zmk,combos";
+        combo_mb3 {
+            timeout-ms = <50>;
+            key-positions = <0 1>;
+            bindings = <&mkp MB3>;
+        };
+        combo_ble_layer {
+            timeout-ms = <50>;
+            key-positions = <2 3>;
+            bindings = <&mo BLE>;
+        };
+        combo_studio {
+            timeout-ms = <100>;
+            key-positions = <1 2 3>;
+            bindings = <&studio_unlock>;
+        };
+        combo_bootloader {
+            timeout-ms = <100>;
+            key-positions = <0 1 2 3>;
+            bindings = <&bootloader>;
+        };
+    };
+
+    behaviors {
+        ccpi: ccpi {
+            compatible = "zmk,behavior-cycle-cpi";
+            #binding-cells = <1>;
+            device = <&trackball>;
+            cpis = <200 400 600 800 1000 1600 2400 3200>;
+            default-cpi-index = <2>;
+            display-name = "CPI";
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        default_layer {
+            bindings = <
+                &lt LOWER LEFT      &mkp MB1                &mkp MB2        &lt RAISE RIGHT
+            >;
+        };
+        lower_layer {
+            bindings = <
+                &none               &trans                  &mkp MB4        &kp LC(W)
+            >;
+        };
+        raise_layer {
+            bindings = <
+                &ccpi CCPI_PREV     &ccpi CCPI_NEXT         &trans          &none
+            >;
+        };
+        ble_layer {
+            bindings = <
+                &bt BT_NXT          &bt BT_CLR              &none           &none
+            >;
+        };
+    };
+
+};

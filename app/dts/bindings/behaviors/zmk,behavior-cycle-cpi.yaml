@@ -1,0 +1,32 @@
+# Copyright (c) 2020 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Cycling CPI Action
+
+compatible: "zmk,behavior-cycle-cpi"
+
+include: one_param.yaml
+
+properties:
+  device:
+    type: phandle
+    required: true
+  sensor-channel:
+    type: int
+    required: false
+    default: -1
+  sensor-attr:
+    type: int
+    required: false
+    default: -1
+  cpis:
+    type: array
+    required: true
+  default-cpi-index:
+    type: int
+    required: true
+    default: 2
+  init-delay:
+    type: int
+    required: false
+    default: 3000
