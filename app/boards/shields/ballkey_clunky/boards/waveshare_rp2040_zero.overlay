@@ -1,0 +1,63 @@
+#include <dt-bindings/pinctrl/rpi-pico-rp2040-pinctrl.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+&pinctrl {
+    i2c1_default: i2c1_default {
+        group1 {
+          pinmux = <I2C1_SDA_P26>, <I2C1_SCL_P27>;
+          input-enable;
+          input-schmitt-enable;
+        };
+    };
+
+    spi0_default: spi0_default {
+        group1 {
+            pinmux = <PIO0_P0>;
+        };
+        group2 {
+            pinmux = <PIO0_P0>;
+            input-enable;
+        };
+        group3 {
+          pinmux = <PIO0_P2>;
+        };
+    };
+
+};
+
+&spi0 {
+    status = "okay";
+    cs-gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+
+    trackball: trackball@0 {
+        status = "okay";
+        compatible = "pixart,pmw3610";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        cpi = <600>;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+    };
+};
+
+&i2c1 {
+    status = "okay";
+
+    oled: ssd1306@3c {
+        compatible = "solomon,ssd1306fb";
+        reg = <0x3c>;
+        width = <128>;
+        height = <32>;
+        segment-offset = <0>;
+        page-offset = <0>;
+        display-offset = <0>;
+        multiplex-ratio = <31>;
+        segment-remap;
+        com-invdir;
+        com-sequential;
+        inversion-on;
+        prechargep = <0x22>;
+    };
+};

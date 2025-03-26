@@ -1,2 +1,5 @@
-config SHIELD_BALLKEY_CLUNKY
-    def_bool $(shields_list_contains,ballkey_clunky)
+config SHIELD_BALLKEY_CLUNKY_BLE
+    def_bool $(shields_list_contains,ballkey_clunky_ble)
+
+config SHIELD_BALLKEY_CLUNKY_USB
+    def_bool $(shields_list_contains,ballkey_clunky_usb)

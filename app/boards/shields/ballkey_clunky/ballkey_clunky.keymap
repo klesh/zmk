@@ -42,6 +42,15 @@
             quick-tap-ms = <200>;
             bindings = <&mo>, <&mkp>;
         };
+
+        ccpi: ccpi {
+            compatible = "zmk,behavior-cycle-cpi";
+            #binding-cells = <1>;
+            device = <&trackball>;
+            cpis = <200 400 600 800 1000 1600 2400 3200>;
+            default-cpi-index = <2>;
+            display-name = "CPI";
+        };
     };
 
     combos {
@@ -65,17 +74,6 @@
             timeout-ms = <100>;
             key-positions = <0 1 2 3>;
             bindings = <&bootloader>;
-        };
-    };
-
-    behaviors {
-        ccpi: ccpi {
-            compatible = "zmk,behavior-cycle-cpi";
-            #binding-cells = <1>;
-            device = <&trackball>;
-            cpis = <200 400 600 800 1000 1600 2400 3200>;
-            default-cpi-index = <2>;
-            display-name = "CPI";
         };
     };
 

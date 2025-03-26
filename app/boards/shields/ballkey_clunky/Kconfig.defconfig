@@ -1,6 +1,6 @@
 # 第二个 Kconfig 文件：设定 shield 的配置项及默认值
 
-if SHIELD_BALLKEY_CLUNKY
+if SHIELD_BALLKEY_CLUNKY_BLE || SHIELD_BALLKEY_CLUNKY_USB
 
 config ZMK_KEYBOARD_NAME
     default "Ballkey Clunky"
