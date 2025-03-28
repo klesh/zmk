@@ -25,6 +25,7 @@
             tapping-term-ms = <220>;
             quick-tap-ms = <200>;
             bindings = <&kp>, <&kp>;
+            display-name = "Hold Tap";
         };
         lt: layer_tap {
             compatible = "zmk,behavior-hold-tap";
@@ -33,14 +34,16 @@
             tapping-term-ms = <200>;
             quick-tap-ms = <200>;
             bindings = <&mo>, <&kp>;
+            display-name = "Layer Tap";
         };
-        ltm: layer_tap {
+        ltm: layer_tap_mouse {
             compatible = "zmk,behavior-hold-tap";
-            label = "LAYER_TAP";
+            label = "LAYER_TAP_MOUSE";
             #binding-cells = <2>;
             tapping-term-ms = <200>;
             quick-tap-ms = <200>;
             bindings = <&mo>, <&mkp>;
+            display-name = "Layer Tap Mouse";
         };
 
         ccpi: ccpi {
