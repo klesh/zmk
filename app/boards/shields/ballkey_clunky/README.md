@@ -19,6 +19,10 @@ west build -b nice_nano_v2 -- -DSHIELD=ballkey_clunky
 west build -b nice_nano_v2 -S zmk-usb-logging -- -DSHIELD=ballkey_clunky
 # ZMK Studio
 west build -p -b nice_nano_v2 -S zmk-usb-logging -S studio-rpc-usb-uart -- -DSHIELD=ballkey_clunky -DCONFIG_ZMK_STUDIO=y
+
+
+# wired
+west build -p -b waveshare_rp2040_zero -S zmk-usb-logging -S studio-rpc-usb-uart -- -DSHIELD=ballkey_clunky_usb -DCONFIG_ZMK_STUDIO=y
 ```
 11. flash:
 ```

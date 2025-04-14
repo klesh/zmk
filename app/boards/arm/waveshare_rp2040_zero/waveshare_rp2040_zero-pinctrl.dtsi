@@ -24,7 +24,6 @@
 		};
 	};
 
-/*
 	spi0_default: spi0_default {
 		group1 {
 			pinmux = <SPI0_TX_P3>, <SPI0_SCK_P6>;
@@ -34,5 +33,4 @@
 			input-enable;
 		};
 	};
-*/
 };

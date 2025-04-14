@@ -4,8 +4,8 @@ manifest:
       url-base: https://github.com/zephyrproject-rtos
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
-    - name: badjeff
-      url-base: https://github.com/badjeff
+    - name: klesh
+      url-base: https://github.com/klesh
   projects:
     - name: zephyr
       remote: zmkfirmware
@@ -40,7 +40,7 @@ manifest:
       path: modules/msgs/zmk-studio-messages
       remote: zmkfirmware
     - name: zmk-pmw3610-driver
-      remote: badjeff
+      remote: klesh
       revision: main
   self:
     west-commands: scripts/west-commands.yml
