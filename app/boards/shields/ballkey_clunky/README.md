@@ -6,10 +6,10 @@
 3. install virtualenv: `sudo apt install python3-virtualenv protobuf-compiler`
 4. create virtualenv: `virtualenv .venv`
 5. activate virtualenv: `source .venv/bin/activate`
-6. install python packages: `pip install -r zephyr/scripts/requirements-base.txt`
-7. install west: `pip install west protobuf grpcio-tools`
-8. initialize west: `west init -l app`
-9. download/update modules: `west update && west zephyr-export`
+6. install west: `pip install west protobuf grpcio-tools west`
+7. initialize west: `west init -l app`
+8. download/update modules: `west update && west zephyr-export`
+9. install python packages: `pip install -r zephyr/scripts/requirements-base.txt`
 10. build the shield:
 ```
 cd app
