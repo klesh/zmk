@@ -12,6 +12,8 @@
 9. install python packages: `pip install -r zephyr/scripts/requirements-base.txt`
 10. build the shield:
 ```
+$env.ZEPHYR_SDK_INSTALL_DIR = "/home/klesh/.local/opt/zephyr-sdk-0.16.3"
+$env.ZEPHYR_TOOLCHAIN_VARIANT = "zephyr"
 cd app
 # default
 west build -b nice_nano_v2 -- -DSHIELD=ballkey_clunky

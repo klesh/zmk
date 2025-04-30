@@ -7,10 +7,10 @@
         compatible = "zmk,kscan-gpio-direct";  /* property = value; 其中 value 可以是字符 "string" 字节数据 [0x01 0x02] 等，注意要用;号结尾 */
         wakeup-source; /* 标记为唤醒源？ */
         input-gpios = 
-          <&pro_micro 19 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* <&phandles> 指向 node 的指针。具体 pro_micro 应该是 zmk 内置的 node-label */
-          <&pro_micro 18 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* 第二个元素是数字说明 pro_micro 是一个数组, 而数字是下标。 */
-          <&pro_micro 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* 括号是设定 node 的 properties, 其中 GPIO_ACTIVE_LOW 意为低电平触发，GPIO_PULL_UP 为默认上拉 */
-          <&pro_micro 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; /* 数组用,号隔开;号结尾  */
+          <&gpio0 2  (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* <&phandles> 指向 node 的指针。具体 pro_micro 应该是 zmk 内置的 node-label */
+          <&gpio1 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* 第二个元素是数字说明 pro_micro 是一个数组, 而数字是下标。 */
+          <&gpio1 13 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>, /* 括号是设定 node 的 properties, 其中 GPIO_ACTIVE_LOW 意为低电平触发，GPIO_PULL_UP 为默认上拉 */
+          <&gpio1 11 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; /* 数组用,号隔开;号结尾  */
     };
 
 };
