@@ -16,3 +16,6 @@ __pycache__
 
 # clangd
 app/.cache/
+
+kb_zmk_ps2_mouse_trackpoint_driver/
+zmk-pmw3610-driver/
