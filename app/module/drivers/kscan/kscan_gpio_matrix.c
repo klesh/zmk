@@ -169,9 +169,7 @@ static int kscan_matrix_interrupt_disable(const struct device *dev) {
         return err;
     }
 
-    // While interrupts are disabled, set all outputs inactive so
-    // kscan_matrix_read() can scan them one by one.
-    return kscan_matrix_set_all_outputs(dev, 0);
+    return 0;
 }
 #endif
 
@@ -293,6 +291,9 @@ static int kscan_matrix_read(const struct device *dev) {
 static void kscan_matrix_work_handler(struct k_work *work) {
     struct k_work_delayable *dwork = k_work_delayable_from_work(work);
     struct kscan_matrix_data *data = CONTAINER_OF(dwork, struct kscan_matrix_data, work);
+    // While interrupts are disabled, set all outputs inactive so
+    // kscan_matrix_read() can scan them one by one.
+    kscan_matrix_set_all_outputs(data->dev, 0);
     kscan_matrix_read(data->dev);
 }
 
