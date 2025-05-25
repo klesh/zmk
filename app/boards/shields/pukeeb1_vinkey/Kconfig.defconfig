@@ -12,7 +12,7 @@
 if SHIELD_PUKEEB1
 
 config ZMK_KEYBOARD_NAME
-    default "pukeeb1"
+    default "PUKEEB1 VINKEY"
 
 endif
 
