@@ -1,8 +1,19 @@
 /* 第四个文件：定义物理布局, 以支持 zmk studio 动态改键 */
 
+#include <dt-bindings/zmk/matrix_transform.h>
 #include <physical_layouts.dtsi>
 
 / {
+
+    default_transform: keymap_transform_0 { /* 将 scan 和到的 matrix 转换成 keymap。比如扫描矩阵可能是 6x6，但键盘的布局可能是 3x12, 此时需要映射 */
+        compatible = "zmk,matrix-transform";
+        columns = <4>;
+        rows = <1>;
+        map = <
+            RC(0,0)  RC(0,1)  RC(0,2)  RC(0,3)
+        >;
+    };
+
     ballkey_clunky_physical_layout: ballkey_clunky_physical_layout {
         compatible = "zmk,physical-layout";
         display-name = "Ballkey Clunky";
