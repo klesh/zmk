@@ -139,16 +139,16 @@
 
         tri_layer {
             bindings = <
-        //╭──────────┬──────────┬──────────┬─────────────┬──────────╮   ╭──────────┬──────────┬──────────┬──────────┬──────────╮
-        //│ RESET    │          │          │ PROFILE 3   │PROFILE 0 │   │          │          │          │          │  RESET   │
-           &sys_reset  &trans     &trans     &bt BT_SEL 3 &bt BT_SEL 0    &trans     &trans     &trans     &trans    &sys_reset
-        //├──────────┼──────────┼──────────┼─────────────┼──────────┤   ├──────────┼──────────┼──────────┼──────────┼──────────┤
-        //│BOOTLOADER│          │          │ PROFILE 4   │PROFILE 1 │   │          │          │          │          │BOOTLOADER│
-          &bootloader  &trans     &trans     &bt BT_SEL 4 &bt BT_SEL 1    &trans     &trans     &trans     &trans    &bootloader
-        //├──────────┼──────────┼──────────┼─────────────┼──────────┤   ├──────────┼──────────┼──────────┼──────────┼──────────┤
-        //│          │          │          │ CLEAR BT    │PROFILE 2 │   │          │          │          │          │          │
-            U_MSS_TP_S_D     U_MSS_TP_S_I     &trans    &bt BT_CLR    &bt BT_SEL 2    &trans     &trans     &trans     &trans    &trans
-        //╰──────────┴──────────┴──────────┼─────────────┼──────────┤   ├──────────┼──────────┼──────────┴──────────┴──────────╯
+        //╭──────────────┬──────────────┬──────────┬─────────────┬────────────╮   ╭──────────┬──────────┬──────────┬──────────┬──────────╮
+        //│ ZMK STUDIO   │              │          │ PROFILE 3   │PROFILE 0   │   │          │          │          │          │  RESET   │
+           &studio_unlock   &trans        &trans     &bt BT_SEL 3 &bt BT_SEL 0      &trans     &trans     &trans     &trans    &sys_reset
+        //├──────────────┼──────────────┼──────────┼─────────────┼────────────┤   ├──────────┼──────────┼──────────┼──────────┼──────────┤
+        //│BOOTLOADER    │              │          │ PROFILE 4   │PROFILE 1   │   │          │          │          │          │BOOTLOADER│
+           &bootloader     &trans          &trans    &bt BT_SEL 4 &bt BT_SEL 1      &trans     &trans     &trans     &trans    &bootloader
+        //├──────────────┼──────────────┼──────────┼─────────────┼────────────┤   ├──────────┼──────────┼──────────┼──────────┼──────────┤
+        //│              │              │          │ CLEAR BT    │PROFILE 2   │   │          │          │          │          │          │
+           U_MSS_TP_S_D    U_MSS_TP_S_I     &trans   &bt BT_CLR   &bt BT_SEL 2      &trans     &trans     &trans     &trans    &trans
+        //╰──────────────┴──────────────┴──────────┼─────────────┼────────────┤   ├──────────┼──────────┼──────────┴──────────┴──────────╯
                        &trans     &trans    &trans     &trans             &trans     &trans     &trans     &trans
         //                                 ╰─────────────┴──────────╯   ╰──────────┴──────────╯
             >;
