@@ -1,7 +1,6 @@
 /* 第三个文件：定义键盘的扫描方式和键位映射 */ 
 /* 语法参考： https://docs.zephyrproject.org/latest/build/dts/intro-syntax-structure.html */
 
-#include <dt-bindings/zmk/matrix_transform.h>
 #include "ballkey_clunky_layouts.dtsi"
 
 / {
@@ -10,15 +9,6 @@
         zmk,kscan = &kscan0;
         zmk,physical-layout = &ballkey_clunky_physical_layout;
         zephyr,display = &oled;
-    };
-
-    default_transform: keymap_transform_0 { /* 将 scan 和到的 matrix 转换成 keymap。比如扫描矩阵可能是 6x6，但键盘的布局可能是 3x12, 此时需要映射 */
-        compatible = "zmk,matrix-transform";
-        columns = <4>;
-        rows = <1>;
-        map = <
-            RC(0,0)  RC(0,1)  RC(0,2)  RC(0,3)
-        >;
     };
 
     kscan0: kscan_0 { /* node-label: node-name@node-addr  其中 node-label 可以定义多个，后面可以用 <&kscan0> 来引用这个 node */
@@ -31,10 +21,6 @@
           <&pro_micro 14 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; /* 数组用,号隔开;号结尾  */
     };
 
-};
-
-&ballkey_clunky_physical_layout{
-    transform = <&default_transform>;
 };
 
 
