@@ -20,6 +20,7 @@
 / {
     behaviors {
         ht: hold_tap {
+            display-name = "Hold Tap";
             label = "hold_tap";
             compatible = "zmk,behavior-hold-tap";
             #binding-cells = <2>;
@@ -30,6 +31,7 @@
             bindings = <&kp>, <&kp>;
         };
         lt: layer_tap {
+            display-name = "Layer Tap";
             compatible = "zmk,behavior-hold-tap";
             label = "LAYER_TAP";
             #binding-cells = <2>;
