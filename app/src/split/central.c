@@ -19,6 +19,16 @@
 #include <zmk/events/position_state_changed.h>
 #include <zmk/events/sensor_event.h>
 
+#include <zmk/events/layer_state_changed.h>
+#include <zmk/events/ble_active_profile_changed.h>
+#include <zmk/events/usb_conn_state_changed.h>
+#include <zmk/events/endpoint_changed.h>
+#include <zmk/endpoints.h>
+#include <zmk/usb.h>
+#include <zmk/ble.h>
+#include <zmk/keymap.h>
+#include <zmk/battery.h>
+
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 const struct zmk_split_transport_central *active_transport;
@@ -162,6 +172,144 @@ int zmk_split_central_get_peripheral_battery_level(uint8_t source, uint8_t *leve
 }
 
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+
+int zmk_split_central_sync_output(const zmk_event_t *eh) {
+    if (!active_transport || !active_transport->api ||
+        !active_transport->api->get_available_source_ids || !active_transport->api->send_command) {
+        return -ENODEV;
+    }
+
+    uint8_t source_ids[ZMK_SPLIT_CENTRAL_PERIPHERAL_COUNT];
+
+    int ret = active_transport->api->get_available_source_ids(source_ids);
+
+    if (ret < 0) {
+        return ret;
+    }
+    struct zmk_split_transport_central_command command =
+        (struct zmk_split_transport_central_command){
+            .type = ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_OUTPUT,
+            .data =
+                {
+                    .set_output = {.selected_endpoint = zmk_endpoints_selected(),
+                                   .active_profile_connected =
+                                       zmk_ble_active_profile_is_connected(),
+                                   .active_profile_bonded = !zmk_ble_active_profile_is_open()},
+                },
+        };
+
+    for (size_t i = 0; i < ret; i++) {
+        ret = active_transport->api->send_command(source_ids[i], command);
+        if (ret < 0) {
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
+ZMK_LISTENER(split_sync_output, zmk_split_central_sync_output)
+ZMK_SUBSCRIPTION(split_sync_output, zmk_endpoint_changed)
+#if defined(CONFIG_ZMK_BLE)
+ZMK_SUBSCRIPTION(split_sync_output, zmk_ble_active_profile_changed);
+#endif
+
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+
+int zmk_split_central_sync_layer(const zmk_event_t *eh) {
+    if (!active_transport || !active_transport->api ||
+        !active_transport->api->get_available_source_ids || !active_transport->api->send_command) {
+        return -ENODEV;
+    }
+
+    uint8_t source_ids[ZMK_SPLIT_CENTRAL_PERIPHERAL_COUNT];
+
+    int ret = active_transport->api->get_available_source_ids(source_ids);
+
+    if (ret < 0) {
+        return ret;
+    }
+    zmk_keymap_layer_index_t index = zmk_keymap_highest_layer_active();
+    struct zmk_split_transport_central_command command =
+        (struct zmk_split_transport_central_command){
+            .type = ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_LAYER,
+            .data =
+                {
+                    .set_layer =
+                        {
+                            .index = index,
+                            //   .label = zmk_keymap_layer_name(zmk_keymap_layer_index_to_id(index))
+                        },
+                },
+        };
+
+    for (size_t i = 0; i < ret; i++) {
+        ret = active_transport->api->send_command(source_ids[i], command);
+        if (ret < 0) {
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
+ZMK_LISTENER(split_sync_layer, zmk_split_central_sync_layer)
+ZMK_SUBSCRIPTION(split_sync_layer, zmk_layer_state_changed)
+
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+
+int zmk_split_central_sync_battery(const zmk_event_t *eh) {
+    if (!active_transport || !active_transport->api ||
+        !active_transport->api->get_available_source_ids || !active_transport->api->send_command) {
+        return -ENODEV;
+    }
+
+    uint8_t source_ids[ZMK_SPLIT_CENTRAL_PERIPHERAL_COUNT];
+
+    int ret = active_transport->api->get_available_source_ids(source_ids);
+
+    if (ret < 0) {
+        return ret;
+    }
+
+    const struct zmk_battery_state_changed *ev = as_zmk_battery_state_changed(eh);
+    struct zmk_split_transport_central_command command =
+        (struct zmk_split_transport_central_command){
+            .type = ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_BATTERY,
+            .data =
+                {
+                    .set_battery = {.level = (ev != NULL) ? ev->state_of_charge
+                                                          : zmk_battery_state_of_charge(),
+#if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
+                                    .is_charging = zmk_usb_is_powered()
+#endif
+                    },
+                },
+        };
+
+    for (size_t i = 0; i < ret; i++) {
+        ret = active_transport->api->send_command(source_ids[i], command);
+        if (ret < 0) {
+            return ret;
+        }
+    }
+
+    return 0;
+}
+
+ZMK_LISTENER(split_sync_battery, zmk_split_central_sync_battery)
+ZMK_SUBSCRIPTION(split_sync_battery, zmk_battery_state_changed)
+#if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
+ZMK_SUBSCRIPTION(split_sync_battery, zmk_usb_conn_state_changed);
+#endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
+
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
 
 static int select_first_available_transport(void) {
     // Transports are sorted by priority, so find the first

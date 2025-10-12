@@ -31,29 +31,33 @@ static void set_battery_symbol(lv_obj_t *label, struct battery_status_state stat
 
     uint8_t level = state.level;
 
+    bool hide_level = false;
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
     if (state.usb_present) {
         strcpy(text, LV_SYMBOL_CHARGE " ");
+        hide_level = true;
     }
 #endif /* IS_ENABLED(CONFIG_USB_DEVICE_STACK) */
 
+    if (!hide_level) {
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_BATTERY_STATUS_SHOW_PERCENTAGE)
-    char perc[5] = {};
-    snprintf(perc, sizeof(perc), "%3u%%", level);
-    strcat(text, perc);
+        char perc[5] = {};
+        snprintf(perc, sizeof(perc), "%3u%%", level);
+        strcat(text, perc);
 #else
-    if (level > 95) {
-        strcat(text, LV_SYMBOL_BATTERY_FULL);
-    } else if (level > 65) {
-        strcat(text, LV_SYMBOL_BATTERY_3);
-    } else if (level > 35) {
-        strcat(text, LV_SYMBOL_BATTERY_2);
-    } else if (level > 5) {
-        strcat(text, LV_SYMBOL_BATTERY_1);
-    } else {
-        strcat(text, LV_SYMBOL_BATTERY_EMPTY);
-    }
+        if (level > 95) {
+            strcat(text, LV_SYMBOL_BATTERY_FULL);
+        } else if (level > 65) {
+            strcat(text, LV_SYMBOL_BATTERY_3);
+        } else if (level > 35) {
+            strcat(text, LV_SYMBOL_BATTERY_2);
+        } else if (level > 5) {
+            strcat(text, LV_SYMBOL_BATTERY_1);
+        } else {
+            strcat(text, LV_SYMBOL_BATTERY_EMPTY);
+        }
 #endif
+    }
     lv_label_set_text(label, text);
 }
 

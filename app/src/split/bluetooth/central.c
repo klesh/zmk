@@ -59,6 +59,15 @@ struct peripheral_slot {
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
     uint16_t update_hid_indicators;
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+    uint16_t sync_output;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+    uint16_t sync_layer;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+    uint16_t sync_battery;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
     uint16_t selected_physical_layout_handle;
     uint8_t position_state[POSITION_STATE_DATA_LEN];
     uint8_t changed_positions[POSITION_STATE_DATA_LEN];
@@ -219,6 +228,15 @@ int release_peripheral_slot(int index) {
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
     slot->update_hid_indicators = 0;
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+    slot->sync_output = 0;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+    slot->sync_layer = 0;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+    slot->sync_battery = 0;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
 
     return 0;
 }
@@ -620,6 +638,31 @@ static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
             LOG_DBG("Found update HID indicators handle");
             slot->update_hid_indicators = bt_gatt_attr_value_handle(attr);
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+        } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
+                                BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_LAYER_UUID))) {
+            LOG_DBG("Found sync layer handle");
+            slot->sync_layer = bt_gatt_attr_value_handle(attr);
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+        } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
+                                BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_OUTPUT_UUID))) {
+            LOG_DBG("Found sync output handle");
+            slot->sync_output = bt_gatt_attr_value_handle(attr);
+            zmk_split_central_sync_output(NULL);
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+        } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
+                                BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_LAYER_UUID))) {
+            LOG_DBG("Found sync layer handle");
+            slot->sync_layer = bt_gatt_attr_value_handle(attr);
+            zmk_split_central_sync_layer(NULL);
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+        } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
+                                BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_BATTERY_UUID))) {
+            LOG_DBG("Found sync battery handle");
+            slot->sync_battery = bt_gatt_attr_value_handle(attr);
+            zmk_split_central_sync_battery(NULL);
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_BAS_BATTERY_LEVEL)) {
@@ -1097,6 +1140,68 @@ void split_central_split_run_callback(struct k_work *work) {
             }
             break;
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+        case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_OUTPUT:
+            if (peripherals[payload_wrapper.source].sync_output == 0) {
+                // It appears that sometimes the peripheral is considered connected
+                // before the GATT characteristics have been discovered. If this is
+                // the case, the update_hid_indicators handle will not yet be set.
+                LOG_WRN("NO HANDLE TO SET output ON PERIPHERAL");
+                break;
+            }
+
+            int err_soc =
+                bt_gatt_write_without_response(peripherals[payload_wrapper.source].conn,
+                                               peripherals[payload_wrapper.source].sync_output,
+                                               &payload_wrapper.cmd.data.set_output,
+                                               sizeof(payload_wrapper.cmd.data.set_output), true);
+
+            if (err_soc) {
+                LOG_ERR("Failed to write output characteristic (err %d)", err_soc);
+            }
+            break;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+        case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_LAYER:
+            if (peripherals[payload_wrapper.source].sync_layer == 0) {
+                // It appears that sometimes the peripheral is considered connected
+                // before the GATT characteristics have been discovered. If this is
+                // the case, the update_hid_indicators handle will not yet be set.
+                LOG_WRN("NO HANDLE TO SET layer ON PERIPHERAL");
+                break;
+            }
+
+            int err_slc = bt_gatt_write_without_response(
+                peripherals[payload_wrapper.source].conn,
+                peripherals[payload_wrapper.source].sync_layer, &payload_wrapper.cmd.data.set_layer,
+                sizeof(payload_wrapper.cmd.data.set_layer), true);
+
+            if (err_slc) {
+                LOG_ERR("Failed to write layer characteristic (err %d)", err_slc);
+            }
+            break;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+        case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_BATTERY:
+            if (peripherals[payload_wrapper.source].sync_battery == 0) {
+                // It appears that sometimes the peripheral is considered connected
+                // before the GATT characteristics have been discovered. If this is
+                // the case, the update_hid_indicators handle will not yet be set.
+                LOG_WRN("NO HANDLE TO SET battery ON PERIPHERAL");
+                break;
+            }
+
+            int err_sbc =
+                bt_gatt_write_without_response(peripherals[payload_wrapper.source].conn,
+                                               peripherals[payload_wrapper.source].sync_battery,
+                                               &payload_wrapper.cmd.data.set_battery,
+                                               sizeof(payload_wrapper.cmd.data.set_battery), true);
+
+            if (err_sbc) {
+                LOG_ERR("Failed to write battery characteristic (err %d)", err_sbc);
+            }
+            break;
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
         default:
             LOG_WRN("Unsupported wrapped central command type %d", payload_wrapper.cmd.type);
             return;
@@ -1180,7 +1285,10 @@ static int split_central_bt_send_command(uint8_t source,
     switch (cmd.type) {
     case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SET_HID_INDICATORS:
     case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SET_PHYSICAL_LAYOUT:
-    case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_INVOKE_BEHAVIOR: {
+    case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_INVOKE_BEHAVIOR:
+    case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_OUTPUT:
+    case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_LAYER:
+    case ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_BATTERY: {
         struct central_cmd_wrapper wrapper = {.source = source, .cmd = cmd};
         return split_bt_invoke_behavior_payload(wrapper);
     }

@@ -9,6 +9,9 @@
 #include <zmk/hid_indicators_types.h>
 #include <zmk/sensors.h>
 #include <zephyr/sys/util.h>
+#include <zmk/events/sync_output_state.h>
+#include <zmk/events/sync_layer_state.h>
+#include <zmk/events/sync_battery_state.h>
 
 enum zmk_split_transport_connections_status {
     ZMK_SPLIT_TRANSPORT_CONNECTIONS_STATUS_DISCONNECTED = 0,
@@ -66,6 +69,9 @@ enum zmk_split_transport_central_command_type {
     ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_INVOKE_BEHAVIOR,
     ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SET_PHYSICAL_LAYOUT,
     ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SET_HID_INDICATORS,
+    ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_OUTPUT,
+    ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_LAYER,
+    ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_BATTERY,
 } __packed;
 
 struct zmk_split_transport_central_command {
@@ -87,5 +93,9 @@ struct zmk_split_transport_central_command {
         struct {
             zmk_hid_indicators_t indicators;
         } set_hid_indicators;
+
+        struct zmk_sync_output_state set_output;
+        struct zmk_sync_layer_state set_layer;
+        struct zmk_sync_battery_state set_battery;
     } data;
 } __packed;

@@ -671,6 +671,15 @@ config ZMK_WPM
 config ZMK_CPI
     bool "Sensor CPI"
 
+config ZMK_SYNC_OUTPUT
+    bool "Sync output state to peripheral(s)"
+
+config ZMK_SYNC_LAYER
+    bool "Sync highest layer to peripheral(s)"
+
+config ZMK_SYNC_BATTERY
+    bool "Sync battery state to peripheral(s)"
+
 config ZMK_KEYMAP_SENSORS
     bool "Enable Keymap Sensors support"
     default y
