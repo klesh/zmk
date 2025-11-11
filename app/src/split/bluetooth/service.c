@@ -35,6 +35,20 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/sensor_event.h>
 #include <zmk/sensors.h>
 
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+#include <zmk/events/sync_output_state.h>
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+#include <zmk/events/sync_layer_state.h>
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+#include <zmk/events/sync_battery_state.h>
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+
+#if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
+#include <zmk/events/activity_state_changed.h>
+#endif
+
 #if ZMK_KEYMAP_HAS_SENSORS
 static struct sensor_event last_sensor_event;
 
@@ -102,6 +116,89 @@ static ssize_t split_svc_update_indicators(struct bt_conn *conn, const struct bt
 }
 
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+
+static struct zmk_sync_output_state sync_output_state = {0};
+
+static void split_svc_sync_output_work_callback(struct k_work *work) {
+    LOG_DBG("Sync output state");
+    raise_zmk_sync_output_state(sync_output_state);
+#if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
+    raise_zmk_activity_state_changed(
+        (struct zmk_activity_state_changed){.state = ZMK_ACTIVITY_ACTIVE});
+#endif
+}
+
+static K_WORK_DEFINE(split_svc_sync_output_work, split_svc_sync_output_work_callback);
+
+static ssize_t split_svc_sync_output(struct bt_conn *conn, const struct bt_gatt_attr *attr,
+                                     const void *buf, uint16_t len, uint16_t offset,
+                                     uint8_t flags) {
+    if (offset + len > sizeof(struct zmk_sync_output_state)) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
+    }
+    memcpy(&sync_output_state + offset, buf, len);
+    k_work_submit(&split_svc_sync_output_work);
+    return len;
+}
+
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+
+static struct zmk_sync_layer_state sync_layer_state = {.index = 0};
+
+static void split_svc_sync_layer_work_callback(struct k_work *work) {
+    LOG_DBG("Sync layer state");
+    raise_zmk_sync_layer_state(sync_layer_state);
+#if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
+    raise_zmk_activity_state_changed(
+        (struct zmk_activity_state_changed){.state = ZMK_ACTIVITY_ACTIVE});
+#endif
+}
+
+static K_WORK_DEFINE(split_svc_sync_layer_work, split_svc_sync_layer_work_callback);
+
+static ssize_t split_svc_sync_layer(struct bt_conn *conn, const struct bt_gatt_attr *attr,
+                                    const void *buf, uint16_t len, uint16_t offset, uint8_t flags) {
+    if (offset + len > sizeof(struct zmk_sync_layer_state)) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
+    }
+    memcpy(&sync_layer_state + offset, buf, len);
+    k_work_submit(&split_svc_sync_layer_work);
+    return len;
+}
+
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+
+static struct zmk_sync_battery_state sync_battery_state = {0};
+
+static void split_svc_sync_battery_work_callback(struct k_work *work) {
+    LOG_DBG("Sync battery state");
+    raise_zmk_sync_battery_state(sync_battery_state);
+#if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
+    raise_zmk_activity_state_changed(
+        (struct zmk_activity_state_changed){.state = ZMK_ACTIVITY_ACTIVE});
+#endif
+}
+
+static K_WORK_DEFINE(split_svc_sync_battery_work, split_svc_sync_battery_work_callback);
+
+static ssize_t split_svc_sync_battery(struct bt_conn *conn, const struct bt_gatt_attr *attr,
+                                      const void *buf, uint16_t len, uint16_t offset,
+                                      uint8_t flags) {
+    if (offset + len > sizeof(struct zmk_sync_battery_state)) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
+    }
+    memcpy(&sync_battery_state + offset, buf, len);
+    k_work_submit(&split_svc_sync_battery_work);
+    return len;
+}
+
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
 
 static uint8_t selected_phys_layout = 0;
 
@@ -201,6 +298,21 @@ BT_GATT_SERVICE_DEFINE(
                                BT_GATT_CHRC_WRITE_WITHOUT_RESP, BT_GATT_PERM_WRITE_ENCRYPT, NULL,
                                split_svc_update_indicators, NULL),
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+    BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_OUTPUT_UUID),
+                           BT_GATT_CHRC_WRITE_WITHOUT_RESP, BT_GATT_PERM_WRITE_ENCRYPT, NULL,
+                           split_svc_sync_output, NULL),
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+    BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_LAYER_UUID),
+                           BT_GATT_CHRC_WRITE_WITHOUT_RESP, BT_GATT_PERM_WRITE_ENCRYPT, NULL,
+                           split_svc_sync_layer, NULL),
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+    BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_BATTERY_UUID),
+                           BT_GATT_CHRC_WRITE_WITHOUT_RESP, BT_GATT_PERM_WRITE_ENCRYPT, NULL,
+                           split_svc_sync_battery, NULL),
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
     BT_GATT_CHARACTERISTIC(BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SELECT_PHYS_LAYOUT_UUID),
                            BT_GATT_CHRC_WRITE | BT_GATT_CHRC_READ,
                            BT_GATT_PERM_WRITE_ENCRYPT | BT_GATT_PERM_READ_ENCRYPT,

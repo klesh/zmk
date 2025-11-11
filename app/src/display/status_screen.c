@@ -10,6 +10,9 @@
 #include <zmk/display/widgets/layer_status.h>
 #include <zmk/display/widgets/wpm_status.h>
 #include <zmk/display/widgets/cpi_status.h>
+#include <zmk/display/widgets/sync_layer_status.h>
+#include <zmk/display/widgets/sync_output_status.h>
+#include <zmk/display/widgets/sync_battery_status.h>
 #include <zmk/display/status_screen.h>
 
 #include <zephyr/logging/log.h>
@@ -37,6 +40,18 @@ static struct zmk_widget_wpm_status wpm_status_widget;
 
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_CPI_STATUS)
 static struct zmk_widget_cpi_status cpi_status_widget;
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_LAYER_STATUS)
+static struct zmk_widget_sync_layer_status sync_layer_widget;
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_OUTPUT_STATUS)
+static struct zmk_widget_sync_output_status sync_output_widget;
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_BATTERY_STATUS)
+static struct zmk_widget_sync_battery_status sync_battery_widget;
 #endif
 
 lv_obj_t *zmk_display_status_screen() {
@@ -74,6 +89,23 @@ lv_obj_t *zmk_display_status_screen() {
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_CPI_STATUS)
     zmk_widget_cpi_status_init(&cpi_status_widget, screen);
     lv_obj_align(zmk_widget_cpi_status_obj(&cpi_status_widget), LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_OUTPUT_STATUS)
+    zmk_widget_sync_output_status_init(&sync_output_widget, screen);
+    lv_obj_align(zmk_widget_sync_output_status_obj(&sync_output_widget), LV_ALIGN_BOTTOM_LEFT, 0,
+                 0);
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_LAYER_STATUS)
+    zmk_widget_sync_layer_status_init(&sync_layer_widget, screen);
+    lv_obj_align(zmk_widget_sync_layer_status_obj(&sync_layer_widget), LV_ALIGN_BOTTOM_MID, 15, 0);
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_BATTERY_STATUS)
+    zmk_widget_sync_battery_status_init(&sync_battery_widget, screen);
+    lv_obj_align(zmk_widget_sync_battery_status_obj(&sync_battery_widget), LV_ALIGN_BOTTOM_RIGHT, 0,
+                 0);
 #endif
     return screen;
 }

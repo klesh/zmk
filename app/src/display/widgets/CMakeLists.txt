@@ -7,3 +7,6 @@ target_sources_ifdef(CONFIG_ZMK_WIDGET_PERIPHERAL_STATUS app PRIVATE peripheral_
 target_sources_ifdef(CONFIG_ZMK_WIDGET_LAYER_STATUS app PRIVATE layer_status.c)
 target_sources_ifdef(CONFIG_ZMK_WIDGET_WPM_STATUS app PRIVATE wpm_status.c)
 target_sources_ifdef(CONFIG_ZMK_WIDGET_CPI_STATUS app PRIVATE cpi_status.c)
+target_sources_ifdef(CONFIG_ZMK_WIDGET_SYNC_LAYER_STATUS app PRIVATE sync_layer_status.c)
+target_sources_ifdef(CONFIG_ZMK_WIDGET_SYNC_OUTPUT_STATUS app PRIVATE sync_output_status.c)
+target_sources_ifdef(CONFIG_ZMK_WIDGET_SYNC_BATTERY_STATUS app PRIVATE sync_battery_status.c)

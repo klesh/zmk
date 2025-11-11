@@ -42,4 +42,22 @@ config ZMK_WIDGET_CPI_STATUS
     select LV_USE_LABEL
     select ZMK_CPI
 
+config ZMK_WIDGET_SYNC_LAYER_STATUS
+    bool "Widget for displaying current highest layer on the peripheral"
+    depends on ZMK_SPLIT && !ZMK_SPLIT_ROLE_CENTRAL && ZMK_SPLIT_PERIPHERAL_SYNC_STATE
+    select LV_USE_LABEL
+    select ZMK_SYNC_LAYER
+
+config ZMK_WIDGET_SYNC_OUTPUT_STATUS
+    bool "Widget for displaying keybaord output status on the peripheral"
+    depends on ZMK_SPLIT && !ZMK_SPLIT_ROLE_CENTRAL && ZMK_SPLIT_PERIPHERAL_SYNC_STATE
+    select LV_USE_LABEL
+    select ZMK_SYNC_OUTPUT
+
+config ZMK_WIDGET_SYNC_BATTERY_STATUS
+    bool "Widget for displaying battery status of the central halve on the peripheral"
+    depends on ZMK_SPLIT && !ZMK_SPLIT_ROLE_CENTRAL && ZMK_SPLIT_PERIPHERAL_SYNC_STATE
+    select LV_USE_LABEL
+    select ZMK_SYNC_BATTERY
+
 endmenu
