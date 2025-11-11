@@ -95,6 +95,10 @@ target_sources_ifdef(CONFIG_ZMK_BACKLIGHT app PRIVATE src/behaviors/behavior_bac
 target_sources_ifdef(CONFIG_ZMK_BATTERY_REPORTING app PRIVATE src/events/battery_state_changed.c)
 target_sources_ifdef(CONFIG_ZMK_BATTERY_REPORTING app PRIVATE src/battery.c)
 
+target_sources_ifdef(CONFIG_ZMK_SYNC_OUTPUT app PRIVATE src/events/sync_output_state.c)
+target_sources_ifdef(CONFIG_ZMK_SYNC_LAYER app PRIVATE src/events/sync_layer_state.c)
+target_sources_ifdef(CONFIG_ZMK_SYNC_BATTERY app PRIVATE src/events/sync_battery_state.c)
+
 target_sources_ifdef(CONFIG_ZMK_HID_INDICATORS app PRIVATE src/events/hid_indicators_changed.c)
 
 target_sources_ifdef(CONFIG_ZMK_SPLIT app PRIVATE src/events/split_peripheral_status_changed.c)
