@@ -80,7 +80,7 @@
         //│  Z       │  X       │  C       │  V       │  B       │   │  N       │  M       │ , <      │ . >      │ / ?      │
             HRMR(Z,        X,        C,          V)     &kp B          &kp N      HRML(M,        COMMA,     DOT,      FSLH)
         //╰──────────┴──────────┴──────────┼──────────┼──────────┤   ├──────────┼──────────┼──────────┴──────────┴──────────╯
-                    &kp LCG(F1)  &lt 1 ENTER  &lt 3 ESC  &mkp RCLK     &mkp LCLK  &lt 2 BSPC &mt LSHFT SPACE  &kp C_PLAY
+                    &kp K_POWER  &lt 1 ENTER  &lt 3 ESC  &mkp RCLK     &mkp LCLK  &lt 2 BSPC &mt LSHFT SPACE  &kp C_PP
         //                                 ╰──────────┴──────────╯   ╰──────────┴──────────╯
             >;
             sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp LEFT RIGHT>;
