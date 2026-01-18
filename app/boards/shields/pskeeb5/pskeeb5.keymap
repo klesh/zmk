@@ -12,6 +12,13 @@
 #define LCS(keycode) APPLY_MODS(MOD_LCTL | MOD_LSFT, keycode)
 #define LCG(keycode) APPLY_MODS(MOD_LCTL | MOD_LGUI, keycode)
 
+// Rotary Endocer for mouse scrolling
+#define ROT_MSC_VAL 280
+#define ROT_MSC_SUP MOVE_Y(ROT_MSC_VAL)
+#define ROT_MSC_SDN MOVE_Y(-ROT_MSC_VAL)
+#define ROT_MSC_SLT MOVE_X(-ROT_MSC_VAL)
+#define ROT_MSC_SRT MOVE_X(ROT_MSC_VAL)
+
 
 #include <behaviors/mouse_setting.dtsi>
 #include <dt-bindings/zmk/mouse_settings.h>
@@ -42,7 +49,14 @@
             // global-quick-tap;
             bindings = <&mo>, <&kp>;
         };
+        rot_msc: sensor_rotate_msc {
+            compatible = "zmk,behavior-sensor-rotate-var";
+            #sensor-binding-cells = <2>;
+            bindings = <&msc>, <&msc>;
+            tap-ms = <20>;
+        };
     };
+
 
     combos {
         compatible = "zmk,combos";
@@ -83,6 +97,7 @@
                     &kp K_POWER  &lt 1 ENTER  &lt 3 ESC  &mkp RCLK     &mkp LCLK  &lt 2 BSPC &mt LSHFT SPACE  &kp C_PP
         //                                 ╰──────────┴──────────╯   ╰──────────┴──────────╯
             >;
+            // sensor-bindings = <&rot_msc ROT_MSC_SUP ROT_MSC_SDN &rot_msc ROT_MSC_SLT ROT_MSC_SRT>;
             sensor-bindings = <&inc_dec_kp C_VOL_DN C_VOL_UP &inc_dec_kp LEFT RIGHT>;
         };
 
@@ -108,10 +123,10 @@
             bindings = <
         //╭──────────┬──────────┬──────────┬──────────┬──────────╮   ╭────────────┬──────────┬──────────┬──────────┬──────────╮
         //│  '       │  "       │  !       │  *       │  ~       │   │ scroll up  │  _       │          │  `       │  |       │
-            &kp SQT     &kp DQT   &kp EXCL   &kp STAR   &kp TILDE      &msc SCRL_UP    &kp UNDER  &trans     &kp GRAVE  &kp PIPE 
+            &kp SQT     &kp DQT   &kp EXCL   &kp STAR   &kp TILDE      &msc SCRL_UP    &kp UNDER  &trans  &kp GRAVE  &kp PIPE 
         //├──────────┼──────────┼──────────┼──────────┼──────────┤   ├────────────┼──────────┼──────────┼──────────┼──────────┤
         //│  @       │  #       │  $       │  (       │  )       │   │ scroll down│  [       │  ]       │ {        │  }       │
-            &kp AT     &kp HASH   &kp DLLR   &kp LPAR   &kp RPAR       &msc SCRL_DOWN    &kp LBKT   &kp RBKT  &kp LBRC   &kp RBRC 
+            &kp AT     &kp HASH   &kp DLLR   &kp LPAR   &kp RPAR       &msc SCRL_DOWN  &kp LBKT   &kp RBKT  &kp LBRC   &kp RBRC 
         //├──────────┼──────────┼──────────┼──────────┼──────────┤   ├────────────┼──────────┼──────────┼──────────┼──────────┤
         //│          │  %       │          │ ^        │  \       │   │  &         │          │          │          │          │
             &trans     &kp PRCNT  &trans     &kp CARET  &kp BSLH       &kp AMPS     &trans     &trans    &trans     &trans
