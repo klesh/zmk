@@ -639,10 +639,6 @@ static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
             LOG_DBG("Found update HID indicators handle");
             slot->update_hid_indicators = bt_gatt_attr_value_handle(attr);
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
-        } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
-                                BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_LAYER_UUID))) {
-            LOG_DBG("Found sync layer handle");
-            slot->sync_layer = bt_gatt_attr_value_handle(attr);
 #if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_OUTPUT_UUID))) {
