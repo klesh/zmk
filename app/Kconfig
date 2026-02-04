@@ -670,6 +670,8 @@ config ZMK_WPM
 
 config ZMK_CPI
     bool "Sensor CPI"
+    default y
+    depends on DT_HAS_ZMK_BEHAVIOR_CYCLE_CPI_ENABLED
 
 config ZMK_SYNC_OUTPUT
     bool "Sync output state to peripheral(s)"
