@@ -14,6 +14,7 @@
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+#if DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT)
 
 struct thresholder_config {
     uint8_t type;
@@ -75,3 +76,4 @@ static struct zmk_input_processor_driver_api thresholder_driver_api = {
                           CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, &thresholder_driver_api);
 
 DT_INST_FOREACH_STATUS_OKAY(FILTER_INST)
+#endif /* DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) */
