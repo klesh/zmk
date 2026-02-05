@@ -59,12 +59,12 @@
 
         default_layer {
             bindings = <
-                LHT                 &kp LMB                 &kp RMB        RHT
+                LHT                 &mkp LCLK                 &mkp RCLK        RHT
             >;
         };
         lower_layer {
             bindings = <
-                &none               &trans                  &kp BMB        &kp LC(W)
+                &none               &trans                  &mkp MCLK        &kp LC(W)
             >;
         };
         raise_layer {
