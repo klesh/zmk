@@ -7,7 +7,7 @@
 
     /* layer-8 scroll override */
     scroller: scroller {
-        layers           = <3>;
+        layers           = <2 3>;
         input-processors = <
             &zip_xy_scaler 1 15                              // Scales the scroll speed
             &zip_xy_to_scroll_mapper                         // Converts XY movement to scroll events

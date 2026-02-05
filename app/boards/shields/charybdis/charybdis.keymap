@@ -87,14 +87,14 @@
             key-positions = <33 34>;
         };
         combo_power {
-            bindings = <&kp K>;
+            bindings = <&kp K_POWER>;
             key-positions = <12 24>;
         };
     };
 
     conditional_layers {
         compatible = "zmk,conditional-layers";
-        special_layer {
+        SETTING {
             if-layers = <2 3>;
             then-layer = <4>;
         };
@@ -151,11 +151,11 @@
             display-name = "Nav";
             bindings = <
 // ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬──────────────╮  ╭───────────────┬───────────────┬───────────────┬───────────────┬───────────────┬──────────────╮
-     &trans          &kp LA(F4)      &kp LA(TAB)     &kp END         &trans          &kp LCG(F14)      &kp C_AC_BACK   &kp LC(PG_UP)   &kp LC(PG_DN) &kp C_AC_FORWARD  &kp C_PREV      &trans
+     &trans          &kp LA(F4)      &kp LA(TAB)     &kp END         &trans          &kp LCG(F14)      &mkp MB4        &kp LC(PG_UP)   &kp LC(PG_DN)   &mkp MB5        &kp C_PREV      &trans
 // ├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┼──────────────┤  ├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┼──────────────┤
-     &trans          &kp HOME        &trans          &kp DEL         &kp LC(RIGHT)   &kp LCG(F13)      &kp LEFT        &kp DOWN        &kp UP        &kp RIGHT         &trans          &trans
+     &trans          &kp HOME        &trans          &kp DEL         &kp LC(RIGHT)   &kp LCG(F13)      &kp LEFT        &kp DOWN        &kp UP          &kp RIGHT       &trans          &trans
 // ├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┼──────────────┤  ├───────────────┼───────────────┼───────────────┼───────────────┼───────────────┼──────────────┤
-     &trans          &trans          &trans          &kp LC(INS)     &kp LS(INS)     &kp LC(LEFT)      &kp C_NEXT      &kp C_MUTE      &kp C_VOL_DN  &kp C_VOL_UP      &kp C_PP        &trans
+     &trans          &trans          &trans          &kp LC(INS)     &kp LS(INS)     &kp LC(LEFT)      &kp C_NEXT      &kp C_MUTE      &kp C_VOL_DN    &kp C_VOL_UP    &kp C_PP        &trans
 // ╰───────────────┴───────────────┴───────────────┼───────────────┼───────────────┼──────────────┤  ├───────────────┼───────────────┼───────────────┴───────────────┴───────────────┴──────────────╯
                                                      &trans          &trans          &trans            &trans          &trans
 //                                                 ╰───────────────┴───────────────┴──────────────╯  ╰───────────────┴───────────────╯
