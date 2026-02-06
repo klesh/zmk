@@ -1,64 +1,117 @@
 #!/usr/bin/env python3
+import sys
 import time
 import glob
-import subprocess
-import sys
+import signal
+try:
+    import serial
+except ImportError:
+    print("Error: 'pyserial' module is required. Install it using 'pip install pyserial'")
+    sys.exit(1)
 
+# Flag to control the main loop
+running = True
+
+def signal_handler(sig, frame):
+    global running
+    if running:
+        print("\nExiting...")
+        running = False
+    else:
+        # Force exit if stuck
+        sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+def get_zmk_devices():
+    return sorted(glob.glob('/dev/tty.usbmodem*'))
+
+def check_activity(port, timeout=2.0):
+    print(f"Checking {port} for activity...")
+    try:
+        # Open with timeout
+        with serial.Serial(port, baudrate=115200, timeout=0.1) as ser:
+            start_time = time.time()
+            while time.time() - start_time < timeout:
+                if not running:
+                    return False
+                
+                if ser.in_waiting > 0:
+                    return True
+                
+                # Try reading a byte just in case in_waiting isn't reliable on some drivers
+                data = ser.read(1)
+                if data:
+                    return True
+                    
+                time.sleep(0.1)
+    except (OSError, serial.SerialException):
+        # Don't print error for busy device (could be open by another tool)
+        pass
+    return False
 
 def monitor_and_connect():
-    print("--- USB Serial Monitor ---")
-    print("Waiting for devices matching '/dev/tty.usbmodem*'...")
+    global running
+    print("--- USB Serial Monitor (pyserial) ---")
+    print("Waiting for ZMK devices...")
     print("Press Ctrl+C to exit.")
     
     last_dev_count = 0
 
-    while True:
-        try:
-            # Find matching devices
-            devices = sorted(glob.glob('/dev/tty.usbmodem*'))
+    while running:
+        devices = get_zmk_devices()
+        
+        # Determine if device list changed
+        if len(devices) != last_dev_count and len(devices) > 0:
+             # Wait a moment for device to stabilize if it just appeared
+             time.sleep(0.5) 
+             
+             print(f"\nFound {len(devices)} device(s): {', '.join(devices)}")
+             
+             target_dev = None
+             
+             # Check for activity to find the logging port
+             for dev in devices:
+                 if not running:
+                     break
+                 if check_activity(dev, timeout=2.0):
+                     print(f"  -> Activity detected on {dev} (Logging Port)")
+                     target_dev = dev
+                     break
+                 else:
+                     print(f"  -> No immediate activity on {dev}")
             
-            if not devices:
-                if last_dev_count > 0:
-                     print("\nNo devices found. Waiting...", end='\r')
-                last_dev_count = 0
-                time.sleep(1)
-                continue
-            
-            if len(devices) != last_dev_count:
-                print(f"\nFound {len(devices)} device(s):")
-                for i, dev in enumerate(devices):
-                    label = " (Likely Logging)" if i == 0 else " (Likely Studio/RPC)" if i == 1 else ""
-                    print(f"  - {dev}{label}")
-                last_dev_count = len(devices)
+             if not target_dev:
+                 print("  -> No active output detected. Defaulting to first device.")
+                 target_dev = devices[0]
 
-            # Iterate through devices
-            connected_any = False
-            for dev in devices:
-                print(f"Connecting to {dev} using 'cu -l {dev}'...")
-                
-                try:
-                    subprocess.run(['cu', '-l', dev], check=True)
-                    print(f"\nConnection to {dev} closed.")
-                    connected_any = True
-                    break 
-                    
-                except subprocess.CalledProcessError:
-                    print(f"Connection to {dev} failed. Trying next device...")
-                    continue
-                except FileNotFoundError:
-                    print("Error: 'cu' command not found. Please ensure it is installed.")
-                    return
+             if target_dev and running:
+                 print(f"\nConnecting to {target_dev}...")
+                 try:
+                     with serial.Serial(target_dev, 115200, timeout=0.1) as ser:
+                         print("Connected! (Ctrl+C to exit)")
+                         
+                         while running:
+                             try:
+                                 # Read available data
+                                 # We use a small timeout to keep the loop responsive to Ctrl+C
+                                 data = ser.read(1024) 
+                                 if data:
+                                     sys.stdout.buffer.write(data)
+                                     sys.stdout.buffer.flush()
+                             except serial.SerialException:
+                                 print("\nDevice disconnected.")
+                                 break
+                 except (OSError, serial.SerialException) as e:
+                     print(f"Connection failed: {e}")
+                 
+                 last_dev_count = 0 # Force rescan logic
+                 print("\nRescanning...")
+                 time.sleep(1)
+                 continue
 
-            if not connected_any:
-                time.sleep(2)
-
-                
-        except KeyboardInterrupt:
-            print("\nExiting monitor.")
-            sys.exit(0)
-        except Exception as e:
-            print(f"\nUnexpected error: {e}")
-            time.sleep(1)
+        last_dev_count = len(devices)
+        time.sleep(1)
 
 if __name__ == "__main__":
     monitor_and_connect()
