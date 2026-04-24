@@ -24,7 +24,20 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 def get_zmk_devices():
-    return sorted(glob.glob('/dev/tty.usbmodem*'))
+    """Get available ZMK USB serial devices (cross-platform)."""
+    if sys.platform == 'darwin':
+        # macOS: /dev/tty.usbmodem*
+        return sorted(glob.glob('/dev/tty.usbmodem*'))
+    elif sys.platform == 'linux':
+        # Linux: /dev/ttyUSB* and /dev/ttyACM*
+        devices = sorted(glob.glob('/dev/ttyUSB*')) + sorted(glob.glob('/dev/ttyACM*'))
+        return sorted(set(devices))  # Remove duplicates and sort
+    elif sys.platform == 'win32':
+        # Windows: COM* ports
+        return sorted(glob.glob('COM*'))
+    else:
+        # Fallback for other Unix-like systems
+        return sorted(glob.glob('/dev/tty*'))
 
 def check_activity(port, timeout=2.0):
     print(f"Checking {port} for activity...")
@@ -53,6 +66,7 @@ def check_activity(port, timeout=2.0):
 def monitor_and_connect():
     global running
     print("--- USB Serial Monitor (pyserial) ---")
+    print(f"Platform: {sys.platform}")
     print("Waiting for ZMK devices...")
     print("Press Ctrl+C to exit.")
     
