@@ -1,0 +1,111 @@
+/*
+ * Copyright (c) 2020 Pete Johanson
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include "pskeeb5.dtsi"
+
+&default_transform {
+    col-offset = <5>;
+};
+
+&kscan0 {
+    col-gpios
+        = <&pro_micro 15 GPIO_ACTIVE_HIGH>
+        , <&pro_micro 14 GPIO_ACTIVE_HIGH>
+        , <&pro_micro 6 GPIO_ACTIVE_HIGH>
+        , <&pro_micro 7 GPIO_ACTIVE_HIGH>
+        , <&pro_micro 8 GPIO_ACTIVE_HIGH>
+        ;
+};
+
+&right_encoder {
+    status = "okay";
+};
+
+
+/*
+YDX C02
+*/
+
+#define INPUT_EV_KEY 0x01               /**< Key event */
+#define INPUT_EV_REL 0x02               /**< Relative coordinate event */
+#define INPUT_EV_ABS 0x03               /**< Absolute coordinate event */
+#define INPUT_EV_MSC 0x04               /**< Miscellaneous event */
+#define INPUT_EV_VENDOR_START 0xf0      /**< Vendor specific event start */
+#define INPUT_EV_VENDOR_STOP 0xff       /**< Vendor specific event stop */
+
+#define INPUT_REL_X 0x00                /**< Relative X coordinate */
+#define INPUT_REL_Y 0x01                /**< Relative Y coordinate */
+#define INPUT_REL_WHEEL 0x08            /**< Relative wheel coordinate */
+#define INPUT_REL_HWHEEL 0x06           /**< Relative horizontal wheel coordinate */
+#define INPUT_REL_MISC 0x09             /**< Relative misc coordinate */
+
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+&pinctrl {
+    i2c0_default: i2c0_default {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SCL, 0, 6)>,
+                <NRF_PSEL(TWIM_SDA, 0, 8)>;
+            bias-pull-up;
+        };
+    };
+
+    i2c0_sleep: i2c0_sleep {
+        group1 {
+            psels = <NRF_PSEL(TWIM_SCL, 0, 6)>,
+                <NRF_PSEL(TWIM_SDA, 0, 8)>;
+            low-power-enable;
+        };
+    };
+};
+
+&pro_micro_i2c {
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_STANDARD>;
+
+    trackpoint: ydxc02@15 {
+        status = "okay";
+        compatible = "ydx,c02";
+        reg = <0x15>;
+        irq-gpios = <&gpio1 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        cpi = <75>;
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+
+        // swap-xy;
+        invert-x;
+        invert-y;
+        // force-awake;
+        // force-awake-4ms-mode;
+    };
+};
+
+#include <input/processors.dtsi>
+#include <dt-bindings/zmk/input_transform.h>
+
+/ {
+    trackpoint_listener {
+        status = "okay";
+        compatible = "zmk,input-listener";
+        device = <&trackpoint>;
+        // input-processors = <&zip_xy_scaler 5 5>;
+
+        scroller: scroller {
+            layers           = <2 3>;
+            input-processors = <
+                &zip_xy_scaler 1 15                              // Scales the scroll speed
+                &zip_xy_to_scroll_mapper                         // Converts XY movement to scroll events
+                &zip_scroll_transform (INPUT_TRANSFORM_Y_INVERT) // Inverts the scroll direction
+            >;
+        };
+
+        slow_pointer: slow_pointer {
+            layers           = <1>;
+            input-processors = <&zip_xy_scaler 2 6>;
+        };
+    };
+};

@@ -22,8 +22,18 @@
 
 #include <behaviors/mouse_setting.dtsi>
 #include <dt-bindings/zmk/mouse_settings.h>
-#define U_MSS_TP_S_I &mms MS_TP_SENSITIVITY_INCR
-#define U_MSS_TP_S_D &mms MS_TP_SENSITIVITY_DECR
+
+//#if defined(CONFIG_ZMK_POINTING)
+//#   define CPI_UP &ccpi CCPI_NEXT 
+//#   define CPI_DN &ccpi CCPI_PREV
+//#else
+//#   define CPI_UP &mms MS_TP_SENSITIVITY_INCR
+//#   define CPI_DN &mms MS_TP_SENSITIVITY_DECR
+//#endif
+
+#include <dt-bindings/zmk/cycle_cpi.h>
+#define CPI_UP &ccpi CCPI_NEXT 
+#define CPI_DN &ccpi CCPI_PREV
 
 / {
     behaviors {
@@ -54,6 +64,14 @@
             #sensor-binding-cells = <2>;
             bindings = <&msc>, <&msc>;
             tap-ms = <20>;
+        };
+        ccpi: ccpi {
+            compatible = "zmk,behavior-cycle-cpi";
+            #binding-cells = <1>;
+            device = <&trackpoint>;
+            cpis = <10 20 60 80 100>;
+            default-cpi-index = <2>;
+            display-name = "CPI";
         };
     };
 
@@ -165,7 +183,7 @@
            &trans           &trans        &trans    &bt BT_SEL 4 &bt BT_SEL 1       &to 5     &to 6       &to 7      &to 8      &to 9
         //├──────────────┼──────────────┼──────────┼─────────────┼────────────┤   ├──────────┼──────────┼──────────┼──────────┼──────────┤
         //│              │              │          │ CLEAR BT    │PROFILE 2   │   │          │          │          │          │          │
-           U_MSS_TP_S_D    U_MSS_TP_S_I   &trans   &bt BT_CLR   &bt BT_SEL 2        &to 10    &to 11      &to 12     &to 13     &to 14
+           CPI_DN           CPI_UP        &trans   &bt BT_CLR   &bt BT_SEL 2        &to 10    &to 11      &to 12     &to 13     &to 14
         //╰──────────────┴──────────────┴──────────┼─────────────┼────────────┤   ├──────────┼──────────┼──────────┴──────────┴──────────╯
                        &trans     &trans    &trans     &trans             &trans     &trans     &trans     &trans
         //                                 ╰─────────────┴──────────╯   ╰──────────┴──────────╯

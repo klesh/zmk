@@ -5,4 +5,5 @@ config SHIELD_PSKEEB5_LEFT
     def_bool $(shields_list_contains,pskeeb5_left)
 
 config SHIELD_PSKEEB5_RIGHT
-    def_bool $(shields_list_contains,pskeeb5_right)
+    def_bool $(shields_list_contains,pskeeb5_right) || \
+             $(shields_list_contains,pskeeb5_right_ydxc02)

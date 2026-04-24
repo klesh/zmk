@@ -46,6 +46,9 @@ manifest:
     - name: zmk-pmw3610-driver
       remote: badjeff
       revision: main
+    - name: zmk-ydxc02-driver
+      url: git@github.com:klesh/zmk-ydxc02-driver.git
+      revision: main
     - name: kb_zmk_ps2_mouse_trackpoint_driver
       remote: klesh
       revision: main
