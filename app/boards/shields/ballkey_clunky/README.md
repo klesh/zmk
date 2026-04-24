@@ -6,7 +6,7 @@
 3. install virtualenv: `sudo apt install python3-virtualenv protobuf-compiler`
 4. create virtualenv: `virtualenv .venv`
 5. activate virtualenv: `source .venv/bin/activate`
-6. install west: `pip install west protobuf grpcio-tools`
+6. install west: `pip install west protobuf grpcio-tools setuptools<=81.0.0`
 7. initialize west: `west init -l app`
 8. download/update modules: `west update`, `west zephyr-export`
 9. install python packages: `pip install -r zephyr/scripts/requirements-base.txt`
@@ -14,11 +14,11 @@
 ```
 cd app
 # default
-west -s app build -b nice_nano_v2 -- -DSHIELD=ballkey_clunky
+west build -s app -b nice_nano_v2 -- -DSHIELD=ballkey_clunky
 # USB logging
-west -s app build -b nice_nano_v2 -S zmk-usb-logging -- -DSHIELD=ballkey_clunky
+west build -s app -b nice_nano_v2 -S zmk-usb-logging -- -DSHIELD=ballkey_clunky
 # ZMK Studio
-west -s app build -p -b nice_nano_v2 -S zmk-usb-logging -S studio-rpc-usb-uart -- -DSHIELD=ballkey_clunky -DCONFIG_ZMK_STUDIO=y
+west build -s app -p -b nice_nano_v2 -S zmk-usb-logging -S studio-rpc-usb-uart -- -DSHIELD=ballkey_clunky -DCONFIG_ZMK_STUDIO=y
 ```
 11. flash:
 ```
