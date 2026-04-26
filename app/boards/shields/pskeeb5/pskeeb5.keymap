@@ -20,21 +20,6 @@
 #define ROT_MSC_SRT MOVE_X(ROT_MSC_VAL)
 
 
-#include <behaviors/mouse_setting.dtsi>
-#include <dt-bindings/zmk/mouse_settings.h>
-
-//#if defined(CONFIG_ZMK_POINTING)
-//#   define CPI_UP &ccpi CCPI_NEXT 
-//#   define CPI_DN &ccpi CCPI_PREV
-//#else
-//#   define CPI_UP &mms MS_TP_SENSITIVITY_INCR
-//#   define CPI_DN &mms MS_TP_SENSITIVITY_DECR
-//#endif
-
-#include <dt-bindings/zmk/cycle_cpi.h>
-#define CPI_UP &ccpi CCPI_NEXT 
-#define CPI_DN &ccpi CCPI_PREV
-
 / {
     behaviors {
         ht: hold_tap {

@@ -109,3 +109,7 @@ YDX C02
         };
     };
 };
+
+#include <dt-bindings/zmk/cycle_cpi.h>
+#define CPI_UP &ccpi CCPI_NEXT 
+#define CPI_DN &ccpi CCPI_PREV
