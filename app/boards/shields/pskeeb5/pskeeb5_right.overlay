@@ -524,3 +524,9 @@
     };
 
 };
+
+
+#include <behaviors/mouse_setting.dtsi>
+#include <dt-bindings/zmk/mouse_settings.h>
+#define CPI_UP &mms MS_TP_SENSITIVITY_INCR
+#define CPI_DN &mms MS_TP_SENSITIVITY_DECR
