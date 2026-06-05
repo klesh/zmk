@@ -62,3 +62,7 @@
         zephyr,display = &oled;
     };
 };
+
+
+#define CPI_UP &trans
+#define CPI_DN &trans
