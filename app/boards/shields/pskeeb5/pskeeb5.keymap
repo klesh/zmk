@@ -50,14 +50,6 @@
             bindings = <&msc>, <&msc>;
             tap-ms = <20>;
         };
-        ccpi: ccpi {
-            compatible = "zmk,behavior-cycle-cpi";
-            #binding-cells = <1>;
-            device = <&trackpoint>;
-            cpis = <10 20 60 80 100>;
-            default-cpi-index = <2>;
-            display-name = "CPI";
-        };
     };
 
 
@@ -132,7 +124,7 @@
             &kp AT     &kp HASH   &kp DLLR   &kp LPAR   &kp RPAR       &msc SCRL_DOWN  &kp LBKT   &kp RBKT  &kp LBRC   &kp RBRC 
         //├──────────┼──────────┼──────────┼──────────┼──────────┤   ├────────────┼──────────┼──────────┼──────────┼──────────┤
         //│          │  %       │          │ ^        │  \       │   │  &         │          │          │          │          │
-            &trans     &kp PRCNT  &trans     &kp CARET  &kp BSLH       &kp AMPS     &trans     &trans    &trans     &trans
+            &trans     &kp PRCNT  &kp CAPS   &kp CARET  &kp BSLH       &kp AMPS     &trans     &trans    &trans     &trans
         //╰──────────┴──────────┴──────────┼──────────┼──────────┤   ├────────────┼──────────┼──────────┴──────────┴──────────╯
                         &trans     &trans    &trans     &trans         &trans       &trans     &trans     &trans
         //                                 ╰──────────┴──────────╯   ╰────────────┴──────────╯
