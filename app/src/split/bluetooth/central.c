@@ -33,6 +33,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/battery_state_changed.h>
 #include <zmk/pointing/input_split.h>
 #include <zmk/hid_indicators_types.h>
+#include <zmk/hid_indicators.h>
 #include <zmk/physical_layouts.h>
 
 static int start_scanning(void);
@@ -638,6 +639,7 @@ static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_UPDATE_HID_INDICATORS_UUID))) {
             LOG_DBG("Found update HID indicators handle");
             slot->update_hid_indicators = bt_gatt_attr_value_handle(attr);
+            zmk_split_central_update_hid_indicator(zmk_hid_indicators_get_current_profile());
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
 #if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
