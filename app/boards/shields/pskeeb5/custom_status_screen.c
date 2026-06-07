@@ -10,6 +10,7 @@
 #include <zmk/display/widgets/layer_status.h>
 #include <zmk/display/widgets/wpm_status.h>
 #include <zmk/display/widgets/cpi_status.h>
+#include <zmk/display/widgets/sync_indicators_status.h>
 #include <zmk/display/widgets/sync_layer_status.h>
 #include <zmk/display/widgets/sync_output_status.h>
 #include <zmk/display/widgets/sync_battery_status.h>
@@ -42,6 +43,10 @@ static struct zmk_widget_wpm_status wpm_status_widget;
 
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_CPI_STATUS)
 static struct zmk_widget_cpi_status cpi_status_widget;
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_INDICATORS_STATUS)
+static struct zmk_widget_sync_indicators_status sync_indicators_widget;
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_LAYER_STATUS)
@@ -92,7 +97,13 @@ static void show_status_screen(lv_timer_t *timer) {
 
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_CPI_STATUS)
     zmk_widget_cpi_status_init(&cpi_status_widget, screen);
-    lv_obj_align(zmk_widget_cpi_status_obj(&cpi_status_widget), LV_ALIGN_BOTTOM_RIGHT, 0, 0);
+    lv_obj_align(zmk_widget_cpi_status_obj(&cpi_status_widget), LV_ALIGN_TOP_MID, 0, 0);
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_INDICATORS_STATUS)
+    zmk_widget_sync_indicators_status_init(&sync_indicators_widget, screen);
+    lv_obj_align(zmk_widget_sync_indicators_status_obj(&sync_indicators_widget), LV_ALIGN_TOP_MID,
+                 15, 0);
 #endif
 
 #if IS_ENABLED(CONFIG_ZMK_WIDGET_SYNC_OUTPUT_STATUS)

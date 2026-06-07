@@ -42,6 +42,11 @@ config ZMK_WIDGET_CPI_STATUS
     select LV_USE_LABEL
     select ZMK_CPI
 
+config ZMK_WIDGET_SYNC_INDICATORS_STATUS
+    bool "Widget for displaying current hid indicators on the peripheral"
+    depends on ZMK_SPLIT && !ZMK_SPLIT_ROLE_CENTRAL && ZMK_SPLIT_PERIPHERAL_SYNC_STATE && ZMK_SPLIT_PERIPHERAL_HID_INDICATORS
+    select LV_USE_LABEL
+
 config ZMK_WIDGET_SYNC_LAYER_STATUS
     bool "Widget for displaying current highest layer on the peripheral"
     depends on ZMK_SPLIT && !ZMK_SPLIT_ROLE_CENTRAL && ZMK_SPLIT_PERIPHERAL_SYNC_STATE
