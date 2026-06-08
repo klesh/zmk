@@ -555,6 +555,32 @@ static void update_peripherals_selected_physical_layout(struct k_work *_work) {
 K_WORK_DEFINE(update_peripherals_selected_layouts_work,
               update_peripherals_selected_physical_layout);
 
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+static void sync_hid_indicators_work_cb(struct k_work *work) {
+    zmk_split_central_update_hid_indicator(zmk_hid_indicators_get_current_profile());
+}
+
+static K_WORK_DELAYABLE_DEFINE(sync_hid_indicators_work, sync_hid_indicators_work_cb);
+#endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+static void sync_output_work_cb(struct k_work *work) { zmk_split_central_sync_output(NULL); }
+
+static K_WORK_DELAYABLE_DEFINE(sync_output_work, sync_output_work_cb);
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+static void sync_layer_work_cb(struct k_work *work) { zmk_split_central_sync_layer(NULL); }
+
+static K_WORK_DELAYABLE_DEFINE(sync_layer_work, sync_layer_work_cb);
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
+
+#if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+static void sync_battery_work_cb(struct k_work *work) { zmk_split_central_sync_battery(NULL); }
+
+static K_WORK_DELAYABLE_DEFINE(sync_battery_work, sync_battery_work_cb);
+#endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
+
 static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
                                                  const struct bt_gatt_attr *attr,
                                                  struct bt_gatt_discover_params *params) {
@@ -639,28 +665,28 @@ static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_UPDATE_HID_INDICATORS_UUID))) {
             LOG_DBG("Found update HID indicators handle");
             slot->update_hid_indicators = bt_gatt_attr_value_handle(attr);
-            zmk_split_central_update_hid_indicator(zmk_hid_indicators_get_current_profile());
+            k_work_schedule(&sync_hid_indicators_work, K_MSEC(1300));
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
 #if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_OUTPUT_UUID))) {
             LOG_DBG("Found sync output handle");
             slot->sync_output = bt_gatt_attr_value_handle(attr);
-            zmk_split_central_sync_output(NULL);
+            k_work_schedule(&sync_output_work, K_MSEC(1400));
 #endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
 #if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_LAYER_UUID))) {
             LOG_DBG("Found sync layer handle");
             slot->sync_layer = bt_gatt_attr_value_handle(attr);
-            zmk_split_central_sync_layer(NULL);
+            k_work_schedule(&sync_layer_work, K_MSEC(1500));
 #endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
 #if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_BATTERY_UUID))) {
             LOG_DBG("Found sync battery handle");
             slot->sync_battery = bt_gatt_attr_value_handle(attr);
-            zmk_split_central_sync_battery(NULL);
+            k_work_schedule(&sync_battery_work, K_MSEC(1600));
 #endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
