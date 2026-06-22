@@ -132,7 +132,8 @@ lv_obj_t *zmk_display_status_screen() {
     lv_label_set_text(splash_label, "https://pskeeb.top");
     lv_obj_center(splash_label);
 
-    lv_timer_t *timer = lv_timer_create(show_status_screen, 5000, NULL);
+    lv_timer_t *timer = lv_timer_create(
+        show_status_screen, 5000 /* Must be smaller than CONFIG_ZMK_SYNC_INITIAL_DELAY_MS*/, NULL);
     lv_timer_set_repeat_count(timer, 1);
 
     return screen;
