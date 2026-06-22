@@ -682,6 +682,10 @@ config ZMK_SYNC_LAYER
 config ZMK_SYNC_BATTERY
     bool "Sync battery state to peripheral(s)"
 
+config ZMK_SYNC_INITIAL_DELAY_MS
+    int "Delay before sending state to peripheral(s) after it connected"
+    default 1000
+
 config ZMK_KEYMAP_SENSORS
     bool "Enable Keymap Sensors support"
     default y

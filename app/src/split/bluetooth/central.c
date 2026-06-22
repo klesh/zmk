@@ -665,28 +665,28 @@ static uint8_t split_central_chrc_discovery_func(struct bt_conn *conn,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_UPDATE_HID_INDICATORS_UUID))) {
             LOG_DBG("Found update HID indicators handle");
             slot->update_hid_indicators = bt_gatt_attr_value_handle(attr);
-            k_work_schedule(&sync_hid_indicators_work, K_MSEC(1300));
+            k_work_schedule(&sync_hid_indicators_work, K_MSEC(CONFIG_ZMK_SYNC_INITIAL_DELAY_MS));
 #endif // IS_ENABLED(CONFIG_ZMK_SPLIT_PERIPHERAL_HID_INDICATORS)
 #if IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_OUTPUT_UUID))) {
             LOG_DBG("Found sync output handle");
             slot->sync_output = bt_gatt_attr_value_handle(attr);
-            k_work_schedule(&sync_output_work, K_MSEC(1400));
+            k_work_schedule(&sync_output_work, K_MSEC(CONFIG_ZMK_SYNC_INITIAL_DELAY_MS));
 #endif // IS_ENABLED(CONFIG_ZMK_SYNC_OUTPUT)
 #if IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_LAYER_UUID))) {
             LOG_DBG("Found sync layer handle");
             slot->sync_layer = bt_gatt_attr_value_handle(attr);
-            k_work_schedule(&sync_layer_work, K_MSEC(1500));
+            k_work_schedule(&sync_layer_work, K_MSEC(CONFIG_ZMK_SYNC_INITIAL_DELAY_MS));
 #endif // IS_ENABLED(CONFIG_ZMK_SYNC_LAYER)
 #if IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
                                 BT_UUID_DECLARE_128(ZMK_SPLIT_BT_SYNC_BATTERY_UUID))) {
             LOG_DBG("Found sync battery handle");
             slot->sync_battery = bt_gatt_attr_value_handle(attr);
-            k_work_schedule(&sync_battery_work, K_MSEC(1600));
+            k_work_schedule(&sync_battery_work, K_MSEC(CONFIG_ZMK_SYNC_INITIAL_DELAY_MS));
 #endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
         } else if (!bt_uuid_cmp(((struct bt_gatt_chrc *)attr->user_data)->uuid,
