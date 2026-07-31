@@ -78,6 +78,7 @@ Applies to: `compatible = "zmk,behavior-hold-tap"`
 | `bindings`                    | phandles | A list of two behaviors (without parameters): one for hold and one for tap                                    |                    |
 | `flavor`                      | string   | Adjusts how the behavior chooses between hold and tap                                                         | `"hold-preferred"` |
 | `tapping-term-ms`             | int      | How long in milliseconds the key must be held to trigger a hold                                               |                    |
+| `tap-ms`                      | int      | Minimum time in milliseconds between the tap behavior's press and release                                     | 0                  |
 | `quick-tap-ms`                | int      | Tap twice within this period (in milliseconds) to trigger a tap, even when held                               | -1 (disabled)      |
 | `require-prior-idle-ms`       | int      | Triggers a tap immediately if any non-modifier key was pressed within `require-prior-idle-ms` of the hold-tap | -1 (disabled)      |
 | `retro-tap`                   | bool     | Triggers the tap behavior on release if no other key was pressed during a hold                                | false              |

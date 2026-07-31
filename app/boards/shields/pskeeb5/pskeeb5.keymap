@@ -31,6 +31,7 @@
             tapping-term-ms = <220>;
             quick-tap-ms = <200>;
             // global-quick-tap;
+            tap-ms = <20>;
             bindings = <&kp>, <&kp>;
         };
         lt: layer_tap {
@@ -42,6 +43,7 @@
             tapping-term-ms = <200>;
             quick-tap-ms = <200>;
             // global-quick-tap;
+            tap-ms = <20>;
             bindings = <&mo>, <&kp>;
         };
         rot_msc: sensor_rotate_msc {

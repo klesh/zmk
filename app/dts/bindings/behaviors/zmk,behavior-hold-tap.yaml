@@ -22,6 +22,9 @@ properties:
   quick_tap_ms:
     type: int
     deprecated: true
+  tap-ms:
+    type: int
+    default: 0
   global-quick-tap:
     type: boolean
     deprecated: true

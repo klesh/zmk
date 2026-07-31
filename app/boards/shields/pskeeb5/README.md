@@ -1,4 +1,9 @@
 
+fish config
+```fish
+set -x ZEPHYR_TOOLCHAIN_VARIANT zephyr
+set -x ZEPHYR_SDK_INSTALL_DIR /home/klesh/zephyr-sdk-0.16.3
+```
 
 ## production build
 ```
