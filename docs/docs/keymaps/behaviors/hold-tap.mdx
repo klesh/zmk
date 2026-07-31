@@ -277,6 +277,18 @@ This value defines how long a key must be pressed to trigger the "hold" behavior
 };
 ```
 
+### `tap-ms`
+
+This value defines the minimum time between the press and release of the tap behavior's key down/key up events, in milliseconds. By default this is 0, meaning the tap behavior is released as soon as it would otherwise be (e.g. immediately after being pressed if the hold-tap key itself was released quickly).
+
+Raising this value can help when the host or an application doesn't reliably register very short key presses.
+
+```dts
+&mt {
+    tap-ms = <30>;
+};
+```
+
 ### Using different behavior types with hold-taps
 
 You can create instances of hold-taps invoking most [behavior types](../index.mdx#behaviors) for hold or tap actions, by referencing their node labels in the `bindings` value.

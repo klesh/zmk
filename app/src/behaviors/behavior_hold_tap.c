@@ -58,6 +58,7 @@ struct behavior_hold_tap_config {
     char *tap_behavior_dev;
     int quick_tap_ms;
     int require_prior_idle_ms;
+    int tap_ms;
     enum flavor flavor;
     bool hold_while_undecided;
     bool hold_while_undecided_linger;
@@ -82,6 +83,7 @@ struct active_hold_tap {
     uint32_t param_hold;
     uint32_t param_tap;
     int64_t timestamp;
+    int64_t tap_press_timestamp;
     enum status status;
     const struct behavior_hold_tap_config *config;
     struct k_work_delayable work;
@@ -427,6 +429,7 @@ static int press_tap_binding(struct active_hold_tap *hold_tap) {
     struct zmk_behavior_binding binding = {.behavior_dev = hold_tap->config->tap_behavior_dev,
                                            .param1 = hold_tap->param_tap};
     store_last_hold_tapped(hold_tap);
+    hold_tap->tap_press_timestamp = k_uptime_get();
     return zmk_behavior_invoke_binding(&binding, event, true);
 }
 
@@ -445,6 +448,12 @@ static int release_hold_binding(struct active_hold_tap *hold_tap) {
 }
 
 static int release_tap_binding(struct active_hold_tap *hold_tap) {
+    int64_t tap_ms_left =
+        (hold_tap->tap_press_timestamp + hold_tap->config->tap_ms) - k_uptime_get();
+    if (tap_ms_left > 0) {
+        k_msleep(tap_ms_left);
+    }
+
     struct zmk_behavior_binding_event event = {
         .position = hold_tap->position,
         .timestamp = hold_tap->timestamp,
@@ -866,6 +875,7 @@ static int behavior_hold_tap_init(const struct device *dev) {
         .require_prior_idle_ms = DT_INST_PROP(n, global_quick_tap)                                 \
                                      ? DT_INST_PROP(n, quick_tap_ms)                               \
                                      : DT_INST_PROP(n, require_prior_idle_ms),                     \
+        .tap_ms = DT_INST_PROP(n, tap_ms),                                                         \
         .flavor = DT_ENUM_IDX(DT_DRV_INST(n), flavor),                                             \
         .hold_while_undecided = DT_INST_PROP(n, hold_while_undecided),                             \
         .hold_while_undecided_linger = DT_INST_PROP(n, hold_while_undecided_linger),               \
