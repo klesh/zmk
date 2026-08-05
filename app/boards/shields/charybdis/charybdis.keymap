@@ -33,6 +33,7 @@
             quick-tap-ms = <200>;
             // global-quick-tap;
             bindings = <&kp>, <&kp>;
+            tap-ms = <20>;
         };
         lt: layer_tap {
             display-name = "Layer Tap";
@@ -44,6 +45,7 @@
             quick-tap-ms = <200>;
             // global-quick-tap;
             bindings = <&mo>, <&kp>;
+            tap-ms = <20>;
         };
         ccpi: ccpi {
             compatible = "zmk,behavior-cycle-cpi";
