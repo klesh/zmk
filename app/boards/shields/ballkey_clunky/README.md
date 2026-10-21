@@ -18,7 +18,7 @@ west build -s app -b nice_nano_v2 -- -DSHIELD=ballkey_clunky
 # USB logging
 west build -s app -b nice_nano_v2 -S zmk-usb-logging -- -DSHIELD=ballkey_clunky
 # ZMK Studio
-west build -s app -p -b nice_nano_v2 -S zmk-usb-logging -S studio-rpc-usb-uart -- -DSHIELD=ballkey_clunky -DCONFIG_ZMK_STUDIO=y
+west build -s app -p -b nice_nano_v2 -S studio-rpc-usb-uart -- -DSHIELD=ballkey_clunky -DCONFIG_ZMK_STUDIO=y
 ```
 11. flash:
 ```
