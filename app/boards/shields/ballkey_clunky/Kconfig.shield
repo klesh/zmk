@@ -1,2 +1,5 @@
 config SHIELD_BALLKEY_CLUNKY
     def_bool $(shields_list_contains,ballkey_clunky)
+
+config SHIELD_BALLKEY_CLUNKY_LEFT
+    def_bool $(shields_list_contains,ballkey_clunky_left)
