@@ -1,0 +1,9 @@
+/* 左手版本：复用 ballkey_clunky 的所有定义，仅替换物理布局 */
+
+#include "ballkey_clunky.overlay"
+
+/ {
+    chosen {
+        zmk,physical-layout = &ballkey_clunky_physical_layout_left;
+    };
+};

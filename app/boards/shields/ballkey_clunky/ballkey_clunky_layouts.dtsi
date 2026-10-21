@@ -26,4 +26,17 @@
             , <&key_physical_attrs 100 100  300  100       0     0     0>
             ;
     };
+
+    ballkey_clunky_physical_layout_left: ballkey_clunky_physical_layout_left {
+        compatible = "zmk,physical-layout";
+        display-name = "Ballkey Clunky Left";
+        transform = <&default_transform>;
+        kscan = <&kscan0>;
+        keys  //                     w   h    x    y     rot    rx    ry
+            = <&key_physical_attrs 100 100  300  200       0     0     0>
+            , <&key_physical_attrs 100 100  200  200       0     0     0>
+            , <&key_physical_attrs 100 100  100    0       0     0     0>
+            , <&key_physical_attrs 100 100  100  100       0     0     0>
+            ;
+    };
 };
