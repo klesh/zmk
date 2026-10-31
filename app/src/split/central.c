@@ -193,7 +193,7 @@ int zmk_split_central_sync_output(const zmk_event_t *eh) {
             .type = ZMK_SPLIT_TRANSPORT_CENTRAL_CMD_TYPE_SYNC_OUTPUT,
             .data =
                 {
-                    .set_output = {.selected_endpoint = zmk_endpoints_selected(),
+                    .set_output = {.selected_endpoint = zmk_endpoint_get_selected(),
                                    .active_profile_connected =
                                        zmk_ble_active_profile_is_connected(),
                                    .active_profile_bonded = !zmk_ble_active_profile_is_open()},
