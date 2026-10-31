@@ -1,0 +1,8 @@
+layer_changed: layer 1 state 1 locked 1
+layer_changed: layer 1 state 0 locked 1
+layer_changed: layer 2 state 1 locked 1
+keymap_settings: reset_settings=0
+layer_changed: layer 2 state 0 locked 1
+layer_changed: layer 0 state 1 locked 1
+layer_changed: layer 1 state 1 locked 1
+Failed to set binding at layer 0, index 6 (err: -22)

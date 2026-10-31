@@ -1,0 +1,70 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    behaviors {
+        set_b: set_b {
+            compatible = "zmk,behavior-set-layer-binding-at-idx";
+            #binding-cells = <2>;
+            bindings = <&kp B>;
+        };
+
+        set_c: set_c {
+            compatible = "zmk,behavior-set-layer-binding-at-idx";
+            #binding-cells = <2>;
+            bindings = <&kp C>;
+        };
+
+        keymap_settings: keymap_settings {
+            compatible = "zmk,behavior-keymap-settings";
+            #binding-cells = <1>;
+        };
+
+        get_sensor_binding: get_sensor_binding {
+            compatible = "zmk,behavior-get-sensor-binding";
+            #binding-cells = <2>;
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+
+        // 2x2 matrix, so ZMK_KEYMAP_LEN is 4. With one encoder, the virtual
+        // encoder slots are 4 (CW) and 5 (CCW); 6 is out of range.
+        default_layer {
+            bindings = <
+                &set_b 0 4 &set_c 0 4
+                &set_b 0 5 &to 1
+            >;
+            sensor-bindings = <&inc_dec_kp X Y>;
+        };
+
+        layer_1 {
+            bindings = <
+                &to 2 &set_b 0 6
+                &keymap_settings 0 &keymap_settings 1
+            >;
+        };
+
+        layer_2 {
+            bindings = <
+                &to 0 &keymap_settings 2
+                &keymap_settings 3 &get_sensor_binding 0 0
+            >;
+        };
+    };
+
+    mock_encoder: mock_encoder {
+        compatible = "zmk,sensor-encoder-mock";
+        status = "okay";
+        event-startup-delay = <800>;
+        event-period = <400>;
+    };
+
+    sensors: sensors {
+        compatible = "zmk,keymap-sensors";
+        sensors = <&mock_encoder>;
+        triggers-per-rotation = <20>;
+    };
+};

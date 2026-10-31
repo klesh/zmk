@@ -1,0 +1,26 @@
+#include "../behavior_keymap.dtsi"
+
+// Override only CW. CCW must keep using the devicetree default.
+
+&kscan {
+    events = <
+    // clear overrides persisted by an earlier run
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,0,10) ZMK_MOCK_RELEASE(1,0,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    // set layer 0, encoder 0, CW direction (virtual index 4) to B
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    // check that the override counts as an unsaved change
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(1,0,10) ZMK_MOCK_RELEASE(1,0,10)
+    // return to the default layer
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_RELEASE(0,0,1600)
+    >;
+};
+
+&mock_encoder {
+    events = <18 (-18)>;
+};

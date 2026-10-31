@@ -1,0 +1,29 @@
+#include "../behavior_keymap.dtsi"
+
+// Resolve the effective encoder bindings as Studio would when encoding the keymap.
+
+&kscan {
+    events = <
+    // clear overrides persisted by an earlier run
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,0,10) ZMK_MOCK_RELEASE(1,0,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    // resolve the devicetree defaults for encoder 0
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    // override CW, then resolve again
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_RELEASE(0,0,300)
+    >;
+};
+
+&mock_encoder {
+    events = <18>;
+};

@@ -1,0 +1,6 @@
+s/.*hid_listener_keycode_//p
+s/.*keymap_settings: /keymap_settings: /p
+s/.*get_sensor_binding: /get_sensor_binding: /p
+s/.*Set binding at layer/Set binding at layer/p
+s/.*Failed to set binding/Failed to set binding/p
+s/.*layer_changed/layer_changed/p

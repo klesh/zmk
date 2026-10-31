@@ -1,0 +1,21 @@
+#include "../behavior_keymap.dtsi"
+
+// Override both directions on the same encoder.
+
+&kscan {
+    events = <
+    // clear overrides persisted by an earlier run
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,0,10) ZMK_MOCK_RELEASE(1,0,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    // set CW (virtual index 4) and CCW (virtual index 5) to B
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,0,10) ZMK_MOCK_RELEASE(1,0,10)
+    ZMK_MOCK_RELEASE(0,0,1600)
+    >;
+};
+
+&mock_encoder {
+    events = <18 (-18)>;
+};

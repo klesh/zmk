@@ -28,3 +28,6 @@ int zmk_behavior_sensor_rotate_common_accept_data(
 int zmk_behavior_sensor_rotate_common_process(struct zmk_behavior_binding *binding,
                                               struct zmk_behavior_binding_event event,
                                               enum behavior_sensor_binding_process_mode mode);
+int zmk_behavior_sensor_rotate_common_get_defaults(const struct zmk_behavior_binding *binding,
+                                                   struct zmk_behavior_binding *cw,
+                                                   struct zmk_behavior_binding *ccw);

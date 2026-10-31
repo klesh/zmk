@@ -70,6 +70,9 @@ typedef int (*behavior_sensor_keymap_binding_accept_data_callback_t)(
     struct zmk_behavior_binding *binding, struct zmk_behavior_binding_event event,
     const struct zmk_sensor_config *sensor_config, size_t channel_data_size,
     const struct zmk_sensor_channel_data channel_data[channel_data_size]);
+typedef int (*behavior_sensor_binding_get_defaults_t)(const struct zmk_behavior_binding *binding,
+                                                      struct zmk_behavior_binding *cw,
+                                                      struct zmk_behavior_binding *ccw);
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 typedef int (*behavior_get_parameter_metadata_t)(
     const struct device *behavior, struct behavior_parameter_metadata *param_metadata);
@@ -88,6 +91,7 @@ __subsystem struct behavior_driver_api {
     behavior_keymap_binding_callback_t binding_released;
     behavior_sensor_keymap_binding_accept_data_callback_t sensor_binding_accept_data;
     behavior_sensor_keymap_binding_process_callback_t sensor_binding_process;
+    behavior_sensor_binding_get_defaults_t sensor_binding_get_defaults;
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
     behavior_get_parameter_metadata_t get_parameter_metadata;
     const struct behavior_parameter_metadata *parameter_metadata;

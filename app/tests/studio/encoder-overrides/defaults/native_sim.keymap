@@ -1,0 +1,19 @@
+#include "../behavior_keymap.dtsi"
+
+// With no overrides, encoder detents use the devicetree sensor-bindings.
+
+&kscan {
+    events = <
+    // clear overrides persisted by an earlier run
+    ZMK_MOCK_PRESS(1,1,10) ZMK_MOCK_RELEASE(1,1,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    ZMK_MOCK_PRESS(1,0,10) ZMK_MOCK_RELEASE(1,0,10)
+    ZMK_MOCK_PRESS(0,0,10) ZMK_MOCK_RELEASE(0,0,10)
+    // keep the process alive until both encoder events have fired
+    ZMK_MOCK_RELEASE(0,0,1600)
+    >;
+};
+
+&mock_encoder {
+    events = <18 (-18)>;
+};

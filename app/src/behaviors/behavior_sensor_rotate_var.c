@@ -14,7 +14,8 @@
 
 static const struct behavior_driver_api behavior_sensor_rotate_var_driver_api = {
     .sensor_binding_accept_data = zmk_behavior_sensor_rotate_common_accept_data,
-    .sensor_binding_process = zmk_behavior_sensor_rotate_common_process};
+    .sensor_binding_process = zmk_behavior_sensor_rotate_common_process,
+    .sensor_binding_get_defaults = zmk_behavior_sensor_rotate_common_get_defaults};
 
 #define SENSOR_ROTATE_VAR_INST(n)                                                                  \
     static const struct behavior_sensor_rotate_config behavior_sensor_rotate_var_config_##n = {    \

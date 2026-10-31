@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: MIT
  */
 
+#include <string.h>
+
 #include <drivers/behavior.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/settings/settings.h>
@@ -98,9 +100,26 @@ static const char *zmk_keymap_layer_names[ZMK_KEYMAP_LAYERS_LEN] = {
 
 #if ZMK_KEYMAP_HAS_SENSORS
 
+#define ZMK_KEYMAP_SENSOR_DIRECTIONS 2
+
 static struct zmk_behavior_binding
     zmk_sensor_keymap[ZMK_KEYMAP_LAYERS_LEN][ZMK_KEYMAP_SENSORS_LEN] = {
         DT_INST_FOREACH_CHILD_SEP(0, SENSOR_LAYER, (, ))};
+
+struct zmk_keymap_sensor_direction {
+    struct zmk_behavior_binding binding;
+    bool set;
+};
+
+// Runtime user overrides, indexed by stable layer ID so layer reordering does not move them.
+static struct zmk_keymap_sensor_direction zmk_sensor_overrides[ZMK_KEYMAP_LAYERS_LEN]
+                                                              [ZMK_KEYMAP_SENSORS_LEN]
+                                                              [ZMK_KEYMAP_SENSOR_DIRECTIONS];
+
+#if IS_ENABLED(CONFIG_ZMK_KEYMAP_SETTINGS_STORAGE)
+static uint8_t zmk_sensor_pending[ZMK_KEYMAP_LAYERS_LEN][ZMK_KEYMAP_SENSORS_LEN]
+                                 [ZMK_KEYMAP_SENSOR_DIRECTIONS];
+#endif
 
 #endif /* ZMK_KEYMAP_HAS_SENSORS */
 
@@ -130,6 +149,140 @@ uint8_t map_layer_id_to_index(zmk_keymap_layer_id_t layer_id) {
 #define LAYER_ID_TO_INDEX(_layer) _layer
 
 #endif // IS_ENABLED(CONFIG_ZMK_KEYMAP_LAYER_REORDERING)
+
+#if ZMK_KEYMAP_HAS_SENSORS
+
+static inline bool sensor_binding_equal(const struct zmk_behavior_binding *a,
+                                        const struct zmk_behavior_binding *b) {
+    if (a->param1 != b->param1 || a->param2 != b->param2) {
+        return false;
+    }
+
+#if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_LOCAL_IDS_IN_BINDINGS)
+    if (a->local_id != b->local_id && a->local_id != 0 && b->local_id != 0) {
+        return false;
+    }
+#endif
+
+    if (a->behavior_dev == b->behavior_dev) {
+        return true;
+    }
+
+    if (!a->behavior_dev || !b->behavior_dev) {
+        return false;
+    }
+
+    return strcmp(a->behavior_dev, b->behavior_dev) == 0;
+}
+
+bool zmk_keymap_get_sensor_override(zmk_keymap_layer_id_t layer, uint8_t sensor, uint8_t direction,
+                                    struct zmk_behavior_binding *binding) {
+    if (layer >= ZMK_KEYMAP_LAYERS_LEN || sensor >= ZMK_KEYMAP_SENSORS_LEN ||
+        direction >= ZMK_KEYMAP_SENSOR_DIRECTIONS) {
+        return false;
+    }
+
+    const struct zmk_keymap_sensor_direction *override =
+        &zmk_sensor_overrides[layer][sensor][direction];
+
+    if (!override->set) {
+        return false;
+    }
+
+    if (binding) {
+        *binding = override->binding;
+    }
+
+    return true;
+}
+
+int zmk_keymap_set_sensor_override(zmk_keymap_layer_id_t layer, uint8_t sensor, uint8_t direction,
+                                   const struct zmk_behavior_binding *binding) {
+    if (layer >= ZMK_KEYMAP_LAYERS_LEN || sensor >= ZMK_KEYMAP_SENSORS_LEN ||
+        direction >= ZMK_KEYMAP_SENSOR_DIRECTIONS) {
+        return -EINVAL;
+    }
+
+    struct zmk_keymap_sensor_direction *override = &zmk_sensor_overrides[layer][sensor][direction];
+
+    if (binding && !zmk_sensor_keymap[layer][sensor].behavior_dev) {
+        // No sensor binding on this layer means the encoder event is never dispatched for it, so
+        // an override here could never take effect.
+        return -ENODEV;
+    }
+
+    if (!binding) {
+        if (!override->set) {
+            return 0;
+        }
+
+        override->set = false;
+        memset(&override->binding, 0, sizeof(override->binding));
+
+#if IS_ENABLED(CONFIG_ZMK_KEYMAP_SETTINGS_STORAGE)
+        zmk_sensor_pending[layer][sensor][direction] = 1;
+#endif
+
+        return 0;
+    }
+
+    if (override->set && sensor_binding_equal(&override->binding, binding)) {
+        return 0;
+    }
+
+    override->binding = *binding;
+    override->set = true;
+
+#if IS_ENABLED(CONFIG_ZMK_KEYMAP_SETTINGS_STORAGE)
+    zmk_sensor_pending[layer][sensor][direction] = 1;
+#endif
+
+    return 0;
+}
+
+int zmk_keymap_get_sensor_binding(zmk_keymap_layer_id_t layer, uint8_t sensor, uint8_t direction,
+                                  struct zmk_behavior_binding *binding) {
+    if (layer >= ZMK_KEYMAP_LAYERS_LEN || sensor >= ZMK_KEYMAP_SENSORS_LEN ||
+        direction >= ZMK_KEYMAP_SENSOR_DIRECTIONS || !binding) {
+        return -EINVAL;
+    }
+
+    if (zmk_keymap_get_sensor_override(layer, sensor, direction, binding)) {
+        return 0;
+    }
+
+    const struct zmk_behavior_binding *base = &zmk_sensor_keymap[layer][sensor];
+
+    if (!base->behavior_dev) {
+        return -ENODEV;
+    }
+
+    const struct device *dev = zmk_behavior_get_binding(base->behavior_dev);
+
+    if (!dev) {
+        return -ENODEV;
+    }
+
+    const struct behavior_driver_api *api = (const struct behavior_driver_api *)dev->api;
+
+    if (!api || !api->sensor_binding_get_defaults) {
+        return -ENOTSUP;
+    }
+
+    struct zmk_behavior_binding cw;
+    struct zmk_behavior_binding ccw;
+    int ret = api->sensor_binding_get_defaults(base, &cw, &ccw);
+
+    if (ret < 0) {
+        return ret;
+    }
+
+    *binding = direction == 0 ? cw : ccw;
+
+    return 0;
+}
+
+#endif // ZMK_KEYMAP_HAS_SENSORS
 
 static inline int set_layer_state(zmk_keymap_layer_id_t layer_id, bool state, bool locking) {
     int ret = 0;
@@ -277,13 +430,42 @@ zmk_keymap_get_layer_binding_at_idx(zmk_keymap_layer_id_t layer_id, uint16_t bin
 
 static uint8_t zmk_keymap_layer_pending_changes[ZMK_KEYMAP_LAYERS_LEN][PENDING_ARRAY_SIZE];
 
+static size_t get_active_layout_keys_len(void) {
+    struct zmk_physical_layout const *const *layouts;
+    size_t layout_count = zmk_physical_layouts_get_list(&layouts);
+    int selected = zmk_physical_layouts_get_selected();
+
+    if (selected >= 0 && (size_t)selected < layout_count && layouts[selected]->keys_len > 0) {
+        return layouts[selected]->keys_len;
+    }
+
+    return ZMK_KEYMAP_LEN;
+}
+
 int zmk_keymap_set_layer_binding_at_idx(zmk_keymap_layer_id_t layer_id, uint16_t binding_idx,
                                         struct zmk_behavior_binding binding) {
-    if (binding_idx >= ZMK_KEYMAP_LEN) {
+    if ((size_t)binding_idx >= ZMK_KEYMAP_LEN + 2 * ZMK_KEYMAP_SENSORS_LEN) {
         return -EINVAL;
     }
 
     ASSERT_LAYER_VAL(layer_id, -EINVAL)
+
+    size_t layout_keys_len = get_active_layout_keys_len();
+
+    if ((size_t)binding_idx >= layout_keys_len) {
+#if ZMK_KEYMAP_HAS_SENSORS
+        size_t encoder_offset = (size_t)binding_idx - layout_keys_len;
+
+        if (encoder_offset >= 2 * ZMK_KEYMAP_SENSORS_LEN) {
+            return -EINVAL;
+        }
+
+        return zmk_keymap_set_sensor_override(layer_id, encoder_offset / 2, encoder_offset % 2,
+                                              &binding);
+#else
+        return -EINVAL;
+#endif
+    }
 
     const uint32_t *pos_map;
     int ret = zmk_physical_layouts_get_selected_to_stock_position_map(&pos_map);
@@ -481,6 +663,16 @@ int zmk_keymap_check_unsaved_changes(void) {
             }
         }
 
+#if ZMK_KEYMAP_HAS_SENSORS
+        for (int s = 0; s < ZMK_KEYMAP_SENSORS_LEN; s++) {
+            for (int d = 0; d < ZMK_KEYMAP_SENSOR_DIRECTIONS; d++) {
+                if (zmk_sensor_pending[l][s][d]) {
+                    return 1;
+                }
+            }
+        }
+#endif // ZMK_KEYMAP_HAS_SENSORS
+
 #if IS_ENABLED(CONFIG_ZMK_KEYMAP_LAYER_REORDERING)
         if (settings_layer_orders[l] != keymap_layer_orders[l]) {
             return 1;
@@ -494,6 +686,7 @@ int zmk_keymap_check_unsaved_changes(void) {
 #define LAYER_ORDER_SETTINGS_KEY "keymap/layer_order"
 #define LAYER_NAME_SETTINGS_KEY "keymap/l_n/%d"
 #define LAYER_BINDING_SETTINGS_KEY "keymap/l/%d/%d"
+#define SENSOR_BINDING_SETTINGS_KEY "keymap/s/%d/%d/%d"
 
 static int save_bindings(void) {
     for (int l = 0; l < ZMK_KEYMAP_LAYERS_LEN; l++) {
@@ -540,6 +733,60 @@ static int save_bindings(void) {
     return 0;
 }
 
+#if ZMK_KEYMAP_HAS_SENSORS
+static int save_sensor_bindings(void) {
+    for (int l = 0; l < ZMK_KEYMAP_LAYERS_LEN; l++) {
+        for (int s = 0; s < ZMK_KEYMAP_SENSORS_LEN; s++) {
+            for (int d = 0; d < ZMK_KEYMAP_SENSOR_DIRECTIONS; d++) {
+                if (!zmk_sensor_pending[l][s][d]) {
+                    continue;
+                }
+
+                char setting_name[24];
+                sprintf(setting_name, SENSOR_BINDING_SETTINGS_KEY, l, s, d);
+
+                int ret = 0;
+                if (zmk_sensor_overrides[l][s][d].set) {
+                    const struct zmk_behavior_binding *binding =
+                        &zmk_sensor_overrides[l][s][d].binding;
+
+                    struct zmk_behavior_binding_setting binding_setting = {
+                        .behavior_local_id = zmk_behavior_get_local_id(binding->behavior_dev),
+                        .param1 = binding->param1,
+                        .param2 = binding->param2,
+                    };
+
+                    size_t len = sizeof(binding_setting);
+                    if (binding_setting.param2 == 0) {
+                        len -= 4;
+
+                        if (binding_setting.param1 == 0) {
+                            len -= 4;
+                        }
+                    }
+
+                    LOG_DBG("Pending save for layer %d sensor %d direction %d: %s with %d, %d", l,
+                            s, d, binding->behavior_dev, binding->param1, binding->param2);
+
+                    ret = settings_save_one(setting_name, &binding_setting, len);
+                } else {
+                    ret = settings_delete(setting_name);
+                }
+
+                if (ret < 0) {
+                    LOG_ERR("Failed to save sensor binding at %d/%d/%d (%d)", l, s, d, ret);
+                    return ret;
+                }
+
+                zmk_sensor_pending[l][s][d] = 0;
+            }
+        }
+    }
+
+    return 0;
+}
+#endif // ZMK_KEYMAP_HAS_SENSORS
+
 #if IS_ENABLED(CONFIG_ZMK_KEYMAP_LAYER_REORDERING)
 static int save_layer_orders(void) {
     int ret = settings_save_one(LAYER_ORDER_SETTINGS_KEY, keymap_layer_orders,
@@ -575,6 +822,13 @@ int zmk_keymap_save_changes(void) {
     if (ret < 0) {
         return ret;
     }
+
+#if ZMK_KEYMAP_HAS_SENSORS
+    ret = save_sensor_bindings();
+    if (ret < 0) {
+        return ret;
+    }
+#endif // ZMK_KEYMAP_HAS_SENSORS
 
 #if IS_ENABLED(CONFIG_ZMK_KEYMAP_LAYER_REORDERING)
     ret = save_layer_orders();
@@ -614,6 +868,11 @@ static void reload_from_stock_keymap(void) {
 int zmk_keymap_discard_changes(void) {
     load_stock_keymap_layer_ordering();
     reload_from_stock_keymap();
+
+#if ZMK_KEYMAP_HAS_SENSORS
+    memset(zmk_sensor_overrides, 0, sizeof(zmk_sensor_overrides));
+    memset(zmk_sensor_pending, 0, sizeof(zmk_sensor_pending));
+#endif
 
     int ret = settings_load_subtree("keymap");
     if (ret >= 0) {
@@ -681,6 +940,21 @@ int zmk_keymap_reset_settings(void) {
             }
         }
     }
+
+#if ZMK_KEYMAP_HAS_SENSORS
+    for (int l = 0; l < ZMK_KEYMAP_LAYERS_LEN; l++) {
+        for (int s = 0; s < ZMK_KEYMAP_SENSORS_LEN; s++) {
+            for (int d = 0; d < ZMK_KEYMAP_SENSOR_DIRECTIONS; d++) {
+                char sensor_setting_name[24];
+                sprintf(sensor_setting_name, SENSOR_BINDING_SETTINGS_KEY, l, s, d);
+                settings_delete(sensor_setting_name);
+                zmk_sensor_pending[l][s][d] = 0;
+            }
+        }
+    }
+
+    memset(zmk_sensor_overrides, 0, sizeof(zmk_sensor_overrides));
+#endif // ZMK_KEYMAP_HAS_SENSORS
 
     load_stock_keymap_layer_ordering();
 
@@ -922,6 +1196,76 @@ static int keymap_handle_set(const char *name, size_t len, settings_read_cb read
             .param2 = binding_setting.param2,
         };
     }
+#if ZMK_KEYMAP_HAS_SENSORS
+    else if (settings_name_steq(name, "s", &next) && next) {
+        char *endptr;
+        uint8_t layer = strtoul(next, &endptr, 10);
+        if (*endptr != '/') {
+            LOG_WRN("Invalid layer number: %s with endptr %s", next, endptr);
+            return -EINVAL;
+        }
+
+        uint8_t sensor = strtoul(endptr + 1, &endptr, 10);
+        if (*endptr != '/') {
+            LOG_WRN("Invalid sensor number: %s with endptr %s", next, endptr);
+            return -EINVAL;
+        }
+
+        uint8_t direction = strtoul(endptr + 1, &endptr, 10);
+        if (*endptr != '\0') {
+            LOG_WRN("Invalid direction number: %s with endptr %s", next, endptr);
+            return -EINVAL;
+        }
+
+        if (len > sizeof(struct zmk_behavior_binding_setting)) {
+            LOG_ERR("Too large sensor binding setting size (got %d expected %d)", len,
+                    sizeof(struct zmk_behavior_binding_setting));
+            return -EINVAL;
+        }
+
+        if (layer >= ZMK_KEYMAP_LAYERS_LEN) {
+            LOG_WRN("Layer %d is larger than max of %d", layer, ZMK_KEYMAP_LAYERS_LEN);
+            return -EINVAL;
+        }
+
+        if (sensor >= ZMK_KEYMAP_SENSORS_LEN) {
+            LOG_WRN("Sensor %d is larger than max of %d", sensor, ZMK_KEYMAP_SENSORS_LEN);
+            return -EINVAL;
+        }
+
+        if (direction >= ZMK_KEYMAP_SENSOR_DIRECTIONS) {
+            LOG_WRN("Direction %d is larger than max of %d", direction,
+                    ZMK_KEYMAP_SENSOR_DIRECTIONS);
+            return -EINVAL;
+        }
+
+        struct zmk_behavior_binding_setting binding_setting = {0};
+        int err = read_cb(cb_arg, &binding_setting, len);
+        if (err <= 0) {
+            LOG_ERR("Failed to handle keymap sensor binding from settings (err %d)", err);
+            return err;
+        }
+
+        const char *behavior_name =
+            zmk_behavior_find_behavior_name_from_local_id(binding_setting.behavior_local_id);
+
+        if (!behavior_name) {
+            LOG_WRN("Loaded device %d from settings but no device found by that local ID",
+                    binding_setting.behavior_local_id);
+        }
+
+        zmk_sensor_overrides[layer][sensor][direction].binding = (struct zmk_behavior_binding){
+#if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_LOCAL_IDS_IN_BINDINGS)
+            .local_id = binding_setting.behavior_local_id,
+#endif
+            .behavior_dev = behavior_name,
+            .param1 = binding_setting.param1,
+            .param2 = binding_setting.param2,
+        };
+        zmk_sensor_overrides[layer][sensor][direction].set = true;
+        zmk_sensor_pending[layer][sensor][direction] = 0;
+    }
+#endif // ZMK_KEYMAP_HAS_SENSORS
 #if IS_ENABLED(CONFIG_ZMK_KEYMAP_LAYER_REORDERING)
     else if (settings_name_steq(name, "layer_order", &next) && !next) {
         int err =
@@ -959,6 +1303,33 @@ static int keymap_handle_commit(void) {
             }
         }
     }
+
+#if ZMK_KEYMAP_HAS_SENSORS
+    for (int l = 0; l < ZMK_KEYMAP_LAYERS_LEN; l++) {
+        for (int s = 0; s < ZMK_KEYMAP_SENSORS_LEN; s++) {
+            for (int d = 0; d < ZMK_KEYMAP_SENSOR_DIRECTIONS; d++) {
+                struct zmk_keymap_sensor_direction *override = &zmk_sensor_overrides[l][s][d];
+
+                if (!override->set) {
+                    continue;
+                }
+
+                struct zmk_behavior_binding *binding = &override->binding;
+
+                if (binding->local_id > 0 && !binding->behavior_dev) {
+                    binding->behavior_dev =
+                        zmk_behavior_find_behavior_name_from_local_id(binding->local_id);
+
+                    if (!binding->behavior_dev) {
+                        LOG_ERR("Failed to finding device for sensor local ID %d after settings "
+                                "load",
+                                binding->local_id);
+                    }
+                }
+            }
+        }
+    }
+#endif // ZMK_KEYMAP_HAS_SENSORS
 #endif
 
     return 0;

@@ -27,3 +27,9 @@ properties:
   keys:
     type: phandle-array
     description: Array of key physical attributes.
+  sensor-key-positions:
+    type: array
+    description: |
+      Key positions (indices into `keys`) of each sensor/encoder, in the same order as the
+      `sensors` property of the keymap sensors node. Used by ZMK Studio to place the synthetic
+      clockwise/counter-clockwise keys next to the physical encoder.

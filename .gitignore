@@ -7,6 +7,9 @@
 /zmk-config
 /build
 
+# native_sim flash simulator artifact from tests
+/app/flash.bin
+
 # macOS
 *.DS_Store
 

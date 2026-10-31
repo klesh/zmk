@@ -56,6 +56,27 @@ int zmk_behavior_sensor_rotate_common_accept_data(
     return 0;
 }
 
+int zmk_behavior_sensor_rotate_common_get_defaults(const struct zmk_behavior_binding *binding,
+                                                   struct zmk_behavior_binding *cw,
+                                                   struct zmk_behavior_binding *ccw) {
+    const struct device *dev = zmk_behavior_get_binding(binding->behavior_dev);
+    if (!dev) {
+        return -ENODEV;
+    }
+
+    const struct behavior_sensor_rotate_config *cfg = dev->config;
+
+    *cw = cfg->cw_binding;
+    *ccw = cfg->ccw_binding;
+
+    if (cfg->override_params) {
+        cw->param1 = binding->param1;
+        ccw->param1 = binding->param2;
+    }
+
+    return 0;
+}
+
 int zmk_behavior_sensor_rotate_common_process(struct zmk_behavior_binding *binding,
                                               struct zmk_behavior_binding_event event,
                                               enum behavior_sensor_binding_process_mode mode) {
@@ -73,16 +94,30 @@ int zmk_behavior_sensor_rotate_common_process(struct zmk_behavior_binding *bindi
     int triggers = data->triggers[sensor_index][event.layer];
 
     struct zmk_behavior_binding triggered_binding;
+    bool has_override = false;
+
     if (triggers > 0) {
-        triggered_binding = cfg->cw_binding;
-        if (cfg->override_params) {
-            triggered_binding.param1 = binding->param1;
+#if ZMK_KEYMAP_HAS_SENSORS
+        has_override =
+            zmk_keymap_get_sensor_override(event.layer, sensor_index, 0, &triggered_binding);
+#endif
+        if (!has_override) {
+            triggered_binding = cfg->cw_binding;
+            if (cfg->override_params) {
+                triggered_binding.param1 = binding->param1;
+            }
         }
     } else if (triggers < 0) {
         triggers = -triggers;
-        triggered_binding = cfg->ccw_binding;
-        if (cfg->override_params) {
-            triggered_binding.param1 = binding->param2;
+#if ZMK_KEYMAP_HAS_SENSORS
+        has_override =
+            zmk_keymap_get_sensor_override(event.layer, sensor_index, 1, &triggered_binding);
+#endif
+        if (!has_override) {
+            triggered_binding = cfg->ccw_binding;
+            if (cfg->override_params) {
+                triggered_binding.param1 = binding->param2;
+            }
         }
     } else {
         return ZMK_BEHAVIOR_TRANSPARENT;

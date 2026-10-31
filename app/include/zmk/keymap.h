@@ -7,6 +7,7 @@
 #pragma once
 
 #include <zmk/events/position_state_changed.h>
+#include <zmk/sensors.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/devicetree.h>
 
@@ -58,6 +59,49 @@ const struct zmk_behavior_binding *zmk_keymap_get_layer_binding_at_idx(zmk_keyma
                                                                        uint16_t binding_idx);
 int zmk_keymap_set_layer_binding_at_idx(zmk_keymap_layer_id_t layer, uint16_t binding_idx,
                                         const struct zmk_behavior_binding binding);
+
+#if ZMK_KEYMAP_HAS_SENSORS
+
+/**
+ * @brief Get a user override for one encoder direction.
+ *
+ * @param layer Stable layer ID.
+ * @param sensor Sensor/encoder index.
+ * @param direction 0 for clockwise, 1 for counter-clockwise.
+ * @param binding Optional output for the stored override binding.
+ *
+ * @retval true if an override is stored for this direction.
+ * @retval false if there is no override.
+ */
+bool zmk_keymap_get_sensor_override(zmk_keymap_layer_id_t layer, uint8_t sensor, uint8_t direction,
+                                    struct zmk_behavior_binding *binding);
+
+/**
+ * @brief Set or clear a user override for one encoder direction.
+ *
+ * Clearing an override (passing NULL for @p binding) restores the behavior's devicetree default.
+ *
+ * @retval 0 on success.
+ * @retval -EINVAL if any index is out of range.
+ * @retval -ENODEV if the layer has no sensor binding for this sensor.
+ */
+int zmk_keymap_set_sensor_override(zmk_keymap_layer_id_t layer, uint8_t sensor, uint8_t direction,
+                                   const struct zmk_behavior_binding *binding);
+
+/**
+ * @brief Resolve the effective binding for one encoder direction.
+ *
+ * The user override is returned when present, otherwise the bound behavior's devicetree default is
+ * resolved.
+ *
+ * @retval 0 on success.
+ * @retval -ENODEV if the layer has no sensor binding for this sensor.
+ * @retval -ENOTSUP if the bound behavior does not support default resolution.
+ */
+int zmk_keymap_get_sensor_binding(zmk_keymap_layer_id_t layer, uint8_t sensor, uint8_t direction,
+                                  struct zmk_behavior_binding *binding);
+
+#endif // ZMK_KEYMAP_HAS_SENSORS
 
 #if IS_ENABLED(CONFIG_ZMK_KEYMAP_LAYER_REORDERING)
 

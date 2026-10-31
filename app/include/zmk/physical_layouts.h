@@ -39,6 +39,15 @@ struct zmk_physical_layout {
 
     const struct zmk_key_physical_attrs *keys;
     size_t keys_len;
+
+    /**
+     * @brief Key positions (indices into @ref keys) of each sensor/encoder.
+     *
+     * The entry at index N describes the sensor at sensor index N. Used by ZMK Studio to place
+     * synthetic encoder direction keys next to the physical encoder.
+     */
+    const uint16_t *sensor_key_positions;
+    size_t sensor_key_positions_len;
 };
 
 #define ZMK_PHYS_LAYOUTS_FOREACH(_ref) STRUCT_SECTION_FOREACH(zmk_physical_layout, _ref)

@@ -23,29 +23,74 @@ ZMK_RPC_SUBSYSTEM(keymap)
 #define KEYMAP_RESPONSE(type, ...) ZMK_RPC_RESPONSE(keymap, type, __VA_ARGS__)
 #define KEYMAP_NOTIFICATION(type, ...) ZMK_RPC_NOTIFICATION(keymap, type, __VA_ARGS__)
 
+static const struct zmk_physical_layout *get_active_layout(void) {
+    struct zmk_physical_layout const *const *layouts;
+    size_t count = zmk_physical_layouts_get_list(&layouts);
+    int selected = zmk_physical_layouts_get_selected();
+
+    if (selected < 0 || (size_t)selected >= count) {
+        return NULL;
+    }
+
+    return layouts[selected];
+}
+
+static size_t get_active_layout_keys_len(void) {
+    const struct zmk_physical_layout *layout = get_active_layout();
+
+    if (!layout || layout->keys_len == 0) {
+        return ZMK_KEYMAP_LEN;
+    }
+
+    return layout->keys_len;
+}
+
+static bool encode_binding(pb_ostream_t *stream, const pb_field_t *field,
+                           const struct zmk_behavior_binding *binding) {
+    zmk_keymap_BehaviorBinding bb = zmk_keymap_BehaviorBinding_init_zero;
+
+    if (binding && binding->behavior_dev) {
+        bb.behavior_id = zmk_behavior_get_local_id(binding->behavior_dev);
+        bb.param1 = binding->param1;
+        bb.param2 = binding->param2;
+    }
+
+    if (!pb_encode_tag_for_field(stream, field)) {
+        return false;
+    }
+
+    return pb_encode_submessage(stream, &zmk_keymap_BehaviorBinding_msg, &bb);
+}
+
 static bool encode_layer_bindings(pb_ostream_t *stream, const pb_field_t *field, void *const *arg) {
     const zmk_keymap_layer_id_t layer_id = *(uint8_t *)*arg;
+    const size_t layout_keys_len = get_active_layout_keys_len();
 
-    for (int b = 0; b < ZMK_KEYMAP_LEN; b++) {
+    for (size_t b = 0; b < layout_keys_len; b++) {
         const struct zmk_behavior_binding *binding =
             zmk_keymap_get_layer_binding_at_idx(layer_id, b);
 
-        zmk_keymap_BehaviorBinding bb = zmk_keymap_BehaviorBinding_init_zero;
-
-        if (binding && binding->behavior_dev) {
-            bb.behavior_id = zmk_behavior_get_local_id(binding->behavior_dev);
-            bb.param1 = binding->param1;
-            bb.param2 = binding->param2;
-        }
-
-        if (!pb_encode_tag_for_field(stream, field)) {
-            return false;
-        }
-
-        if (!pb_encode_submessage(stream, &zmk_keymap_BehaviorBinding_msg, &bb)) {
+        if (!encode_binding(stream, field, binding)) {
             return false;
         }
     }
+
+#if ZMK_KEYMAP_HAS_SENSORS
+    for (int s = 0; s < ZMK_KEYMAP_SENSORS_LEN; s++) {
+        for (int d = 0; d < 2; d++) {
+            struct zmk_behavior_binding binding;
+            const struct zmk_behavior_binding *binding_ptr = NULL;
+
+            if (zmk_keymap_get_sensor_binding(layer_id, s, d, &binding) == 0) {
+                binding_ptr = &binding;
+            }
+
+            if (!encode_binding(stream, field, binding_ptr)) {
+                return false;
+            }
+        }
+    }
+#endif // ZMK_KEYMAP_HAS_SENSORS
 
     return true;
 }
@@ -151,7 +196,16 @@ zmk_studio_Response set_layer_binding(const zmk_studio_Request *req) {
             zmk_keymap_SetLayerBindingResponse_SET_LAYER_BINDING_RESP_INVALID_PARAMETERS);
     }
 
-    ret = zmk_keymap_set_layer_binding_at_idx(set_req->layer_id, set_req->key_position, binding);
+    const int32_t key_position = set_req->key_position;
+    const size_t max_key_position = get_active_layout_keys_len() + 2 * ZMK_KEYMAP_SENSORS_LEN;
+
+    if (key_position < 0 || (size_t)key_position >= max_key_position) {
+        return KEYMAP_RESPONSE(
+            set_layer_binding,
+            zmk_keymap_SetLayerBindingResponse_SET_LAYER_BINDING_RESP_INVALID_LOCATION);
+    }
+
+    ret = zmk_keymap_set_layer_binding_at_idx(set_req->layer_id, (uint16_t)key_position, binding);
 
     if (ret < 0) {
         LOG_WRN("Setting the binding failed with %d", ret);
@@ -290,6 +344,80 @@ static bool encode_layout_keys(pb_ostream_t *stream, const pb_field_t *field, vo
             return false;
         }
     }
+
+#if ZMK_KEYMAP_HAS_SENSORS
+    if (ZMK_KEYMAP_SENSORS_LEN > 0) {
+        int16_t max_x = 0;
+
+        for (int kp = 0; kp < layout->keys_len; kp++) {
+            int16_t right = layout->keys[kp].x + layout->keys[kp].width;
+            if (right > max_x) {
+                max_x = right;
+            }
+        }
+
+        for (int s = 0; s < ZMK_KEYMAP_SENSORS_LEN; s++) {
+            int16_t cw_x;
+            int16_t cw_y;
+            int16_t ccw_x;
+            int16_t ccw_y;
+
+            bool has_position = false;
+
+            if ((size_t)s < layout->sensor_key_positions_len) {
+                uint16_t key_position = layout->sensor_key_positions[s];
+
+                if (key_position < layout->keys_len) {
+                    const struct zmk_key_physical_attrs *anchor = &layout->keys[key_position];
+
+                    // Place the directions side by side just below the physical encoder key.
+                    cw_x = anchor->x;
+                    cw_y = (int16_t)(anchor->y + anchor->height + 10);
+                    ccw_x = (int16_t)(anchor->x + anchor->width + 10);
+                    ccw_y = cw_y;
+                    has_position = true;
+                }
+            }
+
+            if (!has_position) {
+                // Fall back to a deterministic cluster to the right of the keyboard.
+                cw_x = (int16_t)(max_x + 50 + s * 150);
+                cw_y = 0;
+                ccw_x = cw_x;
+                ccw_y = 150;
+            }
+
+            const zmk_keymap_KeyPhysicalAttrs directions[] = {
+                {
+                    .width = 100,
+                    .height = 100,
+                    .x = cw_x,
+                    .y = cw_y,
+                },
+                {
+                    .width = 100,
+                    .height = 100,
+                    .x = ccw_x,
+                    .y = ccw_y,
+                },
+            };
+
+            for (size_t d = 0; d < ARRAY_SIZE(directions); d++) {
+                if (!pb_encode_tag_for_field(stream, field)) {
+                    LOG_WRN("Failed to encode tag");
+                    return false;
+                }
+
+                if (!pb_encode_submessage(stream, &zmk_keymap_KeyPhysicalAttrs_msg,
+                                          &directions[d])) {
+                    LOG_WRN("Failed to encode synthetic encoder key position submessage");
+                    return false;
+                }
+            }
+        }
+    }
+#endif // ZMK_KEYMAP_HAS_SENSORS
+
     return true;
 }
 

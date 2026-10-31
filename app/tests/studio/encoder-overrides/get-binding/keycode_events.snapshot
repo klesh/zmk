@@ -1,0 +1,19 @@
+layer_changed: layer 1 state 1 locked 1
+layer_changed: layer 1 state 0 locked 1
+layer_changed: layer 2 state 1 locked 1
+keymap_settings: reset_settings=0
+layer_changed: layer 2 state 0 locked 1
+layer_changed: layer 0 state 1 locked 1
+layer_changed: layer 1 state 1 locked 1
+layer_changed: layer 1 state 0 locked 1
+layer_changed: layer 2 state 1 locked 1
+get_sensor_binding: layer=0 sensor=0 cw behavior=key_press p1=458779 p2=0
+get_sensor_binding: layer=0 sensor=0 ccw behavior=key_press p1=458780 p2=0
+layer_changed: layer 2 state 0 locked 1
+Set binding at layer 0, index 4 to binding 1/1
+layer_changed: layer 1 state 1 locked 1
+layer_changed: layer 1 state 0 locked 1
+layer_changed: layer 2 state 1 locked 1
+get_sensor_binding: layer=0 sensor=0 cw behavior=key_press p1=458757 p2=0
+get_sensor_binding: layer=0 sensor=0 ccw behavior=key_press p1=458780 p2=0
+layer_changed: layer 2 state 0 locked 1

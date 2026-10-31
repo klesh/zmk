@@ -68,6 +68,8 @@ BUILD_ASSERT(
     DEVICE_DT_GET(COND_CODE_1(DT_INST_PROP_LEN(n, input), (DT_INST_PHANDLE(n, input)),             \
                               (DT_CHOSEN(zmk_matrix_input))))
 
+#define ZMK_SENSOR_KEY_POSITION_INIT(i, n) DT_INST_PROP_BY_IDX(n, sensor_key_positions, i)
+
 #define ZMK_LAYOUT_INST(n)                                                                         \
     BUILD_ASSERT(!IS_ENABLED(CONFIG_ZMK_STUDIO) || DT_INST_NODE_HAS_PROP(n, keys),                 \
                  "ZMK Studio requires physical layouts with key positions. See "                   \
@@ -75,12 +77,24 @@ BUILD_ASSERT(
     static const struct zmk_key_physical_attrs _CONCAT(_zmk_physical_layout_keys_,                 \
                                                        n)[DT_INST_PROP_LEN_OR(n, keys, 0)] = {     \
         LISTIFY(DT_INST_PROP_LEN_OR(n, keys, 0), ZKPA_INIT, (, ), n)};                             \
+    COND_CODE_1(                                                                                   \
+        DT_INST_NODE_HAS_PROP(n, sensor_key_positions),                                            \
+        (static const uint16_t _CONCAT(_zmk_physical_layout_sensor_key_positions_, n)              \
+             [DT_INST_PROP_LEN(n, sensor_key_positions)] = {                                       \
+                 LISTIFY(DT_INST_PROP_LEN(n, sensor_key_positions),                                \
+                         ZMK_SENSOR_KEY_POSITION_INIT, (, ), n)};),                                \
+        ())                                                                                        \
     ZMK_MATRIX_TRANSFORM_EXTERN(DT_INST_PHANDLE(n, transform));                                    \
     static const struct zmk_physical_layout _CONCAT(_zmk_physical_layout_, DT_DRV_INST(n)) = {     \
         .display_name = DT_INST_PROP_OR(n, display_name, "Layout #" #n),                           \
         .matrix_transform = ZMK_MATRIX_TRANSFORM_T_FOR_NODE(DT_INST_PHANDLE(n, transform)),        \
         .keys = _CONCAT(_zmk_physical_layout_keys_, n),                                            \
         .keys_len = DT_INST_PROP_LEN_OR(n, keys, 0),                                               \
+        COND_CODE_1(DT_INST_NODE_HAS_PROP(n, sensor_key_positions),                                \
+                    (.sensor_key_positions = _CONCAT(                                              \
+                         _zmk_physical_layout_sensor_key_positions_, n),                           \
+                     .sensor_key_positions_len = DT_INST_PROP_LEN(n, sensor_key_positions),),      \
+                    ())                                                                            \
         COND_CODE_1(UTIL_AND(MATRIX_INPUT_SUPPORT, DT_INST_PROP_LEN(n, input)),                    \
                     (.input = INPUT_FOR_INST(n)), ())                                              \
             COND_CODE_1(UTIL_OR(DT_HAS_CHOSEN(zmk_kscan), DT_INST_PROP_LEN(n, kscan)),             \
