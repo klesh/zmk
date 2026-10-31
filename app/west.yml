@@ -53,7 +53,7 @@ manifest:
       revision: main
     - name: kb_zmk_ps2_mouse_trackpoint_driver
       remote: klesh
-      revision: main
+      revision: zmk-4.1
   group-filter: [+optional]
   self:
     west-commands: scripts/west-commands.yml
