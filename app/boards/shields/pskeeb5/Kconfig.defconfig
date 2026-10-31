@@ -49,6 +49,7 @@ endif #     LVGL
 
 endif # LEFT
 
+if SHIELD_PSKEEB5_LEFT || SHIELD_PSKEEB5_RIGHT
 
 config ZMK_SPLIT
     default y
@@ -64,4 +65,6 @@ config ZMK_SYNC_LAYER
 
 config ZMK_SYNC_BATTERY
     default y
+
+endif # LEFT || RIGHT
 
