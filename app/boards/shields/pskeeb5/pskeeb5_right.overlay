@@ -521,6 +521,8 @@
         xy-swap;
 
         scroll-layer = <3>;
+        scroll-scale-multiplier = <1>;
+        scroll-scale-divisor = <5>;
     };
 
 };
