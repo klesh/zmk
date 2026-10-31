@@ -53,6 +53,10 @@ static const int32_t NUM_CONDITIONAL_LAYER_CFGS =
 static bool conditional_layer_updates_needed;
 // Tracks which layers have been locked by conditional layer activations.
 static uint32_t layer_locked_by_conditional = 0;
+// Bitmask of the then-layers that were activated by this driver. A then-layer may also be activated
+// by another mechanism (e.g. a &mo/&lt/&to/&tog binding); in that case the layer must keep working
+// normally, so it is only switched off again if this driver is what switched it on.
+static zmk_keymap_layers_state_t conditional_layer_owned = 0;
 
 static void conditional_layer_activate(int8_t layer, bool locking) {
     // This may trigger another event that could, in turn, activate additional then-layers. However,
@@ -60,14 +64,15 @@ static void conditional_layer_activate(int8_t layer, bool locking) {
     if (!zmk_keymap_layer_active(layer) || (locking && !zmk_keymap_layer_locked(layer))) {
         LOG_DBG("layer %d", layer);
         zmk_keymap_layer_activate(layer, locking);
+        conditional_layer_owned |= BIT(layer);
     }
 }
 
 static void conditional_layer_deactivate(int8_t layer, bool locking) {
-    // This may deactivate a then-layer that's already active via another mechanism (e.g., a
-    // momentary layer behavior). However, the same problem arises when multiple keys with the same
-    // &mo binding are held and then one is released, so it's probably not an issue in practice.
-    if (zmk_keymap_layer_active(layer) && (!zmk_keymap_layer_locked(layer) || locking)) {
+    // Only deactivate a then-layer if this driver is what activated it. Otherwise, a then-layer
+    // that is also held by another mechanism (e.g. a momentary layer behavior) would stop working.
+    if (zmk_keymap_layer_active(layer) && (conditional_layer_owned & BIT(layer)) != 0U &&
+        (!zmk_keymap_layer_locked(layer) || locking)) {
         LOG_DBG("layer %d", layer);
         zmk_keymap_layer_deactivate(layer, locking);
     }
@@ -117,6 +122,7 @@ static int layer_state_changed_listener(const zmk_event_t *ev) {
                 } else {
                     conditional_layer_deactivate(layer, locking);
                     WRITE_BIT(layer_locked_by_conditional, layer, false);
+                    conditional_layer_owned &= ~BIT(layer);
                 }
             }
         }
