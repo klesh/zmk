@@ -23,6 +23,11 @@ ZMK_RPC_SUBSYSTEM(keymap)
 #define KEYMAP_RESPONSE(type, ...) ZMK_RPC_RESPONSE(keymap, type, __VA_ARGS__)
 #define KEYMAP_NOTIFICATION(type, ...) ZMK_RPC_NOTIFICATION(keymap, type, __VA_ARGS__)
 
+// Synthetic encoder direction keys are intentionally smaller than a full key.
+#define SENSOR_DIRECTION_KEY_SIZE 70
+#define SENSOR_DIRECTION_KEY_GAP 10
+#define SENSOR_DIRECTION_KEY_OFFSET 10
+
 static const struct zmk_physical_layout *get_active_layout(void) {
     struct zmk_physical_layout const *const *layouts;
     size_t count = zmk_physical_layouts_get_list(&layouts);
@@ -369,11 +374,12 @@ static bool encode_layout_keys(pb_ostream_t *stream, const pb_field_t *field, vo
 
                 if (key_position < layout->keys_len) {
                     const struct zmk_key_physical_attrs *anchor = &layout->keys[key_position];
+                    int16_t pair_width = 2 * SENSOR_DIRECTION_KEY_SIZE + SENSOR_DIRECTION_KEY_GAP;
 
-                    // Place the directions side by side just below the physical encoder key.
-                    cw_x = anchor->x;
-                    cw_y = (int16_t)(anchor->y + anchor->height + 10);
-                    ccw_x = (int16_t)(anchor->x + anchor->width + 10);
+                    // Center the smaller direction pair below the physical encoder key.
+                    cw_x = (int16_t)(anchor->x + (anchor->width - pair_width) / 2);
+                    cw_y = (int16_t)(anchor->y + anchor->height + SENSOR_DIRECTION_KEY_OFFSET);
+                    ccw_x = (int16_t)(cw_x + SENSOR_DIRECTION_KEY_SIZE + SENSOR_DIRECTION_KEY_GAP);
                     ccw_y = cw_y;
                     has_position = true;
                 }
@@ -384,19 +390,19 @@ static bool encode_layout_keys(pb_ostream_t *stream, const pb_field_t *field, vo
                 cw_x = (int16_t)(max_x + 50 + s * 150);
                 cw_y = 0;
                 ccw_x = cw_x;
-                ccw_y = 150;
+                ccw_y = (int16_t)(SENSOR_DIRECTION_KEY_SIZE + SENSOR_DIRECTION_KEY_GAP);
             }
 
             const zmk_keymap_KeyPhysicalAttrs directions[] = {
                 {
-                    .width = 100,
-                    .height = 100,
+                    .width = SENSOR_DIRECTION_KEY_SIZE,
+                    .height = SENSOR_DIRECTION_KEY_SIZE,
                     .x = cw_x,
                     .y = cw_y,
                 },
                 {
-                    .width = 100,
-                    .height = 100,
+                    .width = SENSOR_DIRECTION_KEY_SIZE,
+                    .height = SENSOR_DIRECTION_KEY_SIZE,
                     .x = ccw_x,
                     .y = ccw_y,
                 },
