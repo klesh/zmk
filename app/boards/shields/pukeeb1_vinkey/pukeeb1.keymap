@@ -89,7 +89,7 @@
         //│  Z       │  X       │  C       │  V       │  B       │   │  N       │  M       │ , <      │ . >      │ / ?      │
             HRMR(Z,        X,        C,          V)     &kp B          &kp N      HRML(M,        COMMA,     DOT,      FSLH)
         //╰──────────┴──────────┴──────────┼──────────┼──────────┤   ├──────────┼──────────┼──────────┴──────────┴──────────╯
-                    &kp K_POWER  &lt 1 ENTER  &lt 3 ESC  &mkp RCLK     &mkp LCLK  &lt 2 BSPC &mt LSHFT SPACE  &kp C_PP
+                    &kp K_POWER  &lt 1 ENTER  &lt 3 ESC  &mkp LCLK     &mkp RCLK  &lt 2 BSPC &mt LSHFT SPACE  &kp C_PP
         //                                 ╰──────────┴──────────╯   ╰──────────┴──────────╯
             >;
             // sensor-bindings = <&rot_msc ROT_MSC_SUP ROT_MSC_SDN &rot_msc ROT_MSC_SLT ROT_MSC_SRT>;
@@ -142,7 +142,7 @@
            &kp HOME    &trans       &kp DEL    &kp LC(RIGHT)   &kp LCG(F13)      &kp LEFT       &kp DOWN        &kp UP        &kp RIGHT         &trans
         //├──────────┼────────────┼───────────┼──────────────┼─────────────┤   ├──────────────┼───────────────┼─────────────┼─────────────────┼──────────┤
         //│          │            │           │              │ C-Left      │   │ Next         │ Mute          │ Vol -       │ Vol +           │ Play     │
-            &trans     &trans       &trans      &trans         &kp LC(LEFT)      &kp C_NEXT     &kp C_MUTE      &kp C_VOL_DN  &kp C_VOL_UP      &kp C_PP
+            &trans     &trans       &kp LC(INS) &kp LS(INS)    &kp LC(LEFT)      &kp C_NEXT     &kp C_MUTE      &kp C_VOL_DN  &kp C_VOL_UP      &kp C_PP
         //╰──────────┴────────────┴───────────┼──────────────┼─────────────┤   ├──────────────┼───────────────┼─────────────┴─────────────────┴──────────╯
                         &trans     &trans    &trans     &trans         &trans       &trans     &trans     &trans
         //                                    ╰──────────────┴─────────────╯   ╰──────────────┴───────────────╯
