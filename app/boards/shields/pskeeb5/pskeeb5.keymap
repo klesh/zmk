@@ -144,7 +144,7 @@
            &kp HOME    &trans       &kp DEL    &kp LC(RIGHT)   &kp LCG(F13)      &kp LEFT       &kp DOWN        &kp UP        &kp RIGHT         &trans
         //├──────────┼────────────┼───────────┼──────────────┼─────────────┤   ├──────────────┼───────────────┼─────────────┼─────────────────┼──────────┤
         //│          │            │           │              │ C-Left      │   │ Next         │ Mute          │ Vol -       │ Vol +           │ Play     │
-            &trans     &trans       &kp LC(INS)  &kp LS(INS)         &kp LC(LEFT)      &kp C_NEXT     &kp C_MUTE      &kp C_VOL_DN  &kp C_VOL_UP      &kp C_PP
+            &trans     &trans       &kp LC(INS) &kp LS(INS)    &kp LC(LEFT)      &kp C_NEXT     &kp C_MUTE      &kp C_VOL_DN  &kp C_VOL_UP      &kp C_PP
         //╰──────────┴────────────┴───────────┼──────────────┼─────────────┤   ├──────────────┼───────────────┼─────────────┴─────────────────┴──────────╯
                         &trans     &trans    &trans     &trans         &trans       &trans     &trans     &trans
         //                                    ╰──────────────┴─────────────╯   ╰──────────────┴───────────────╯
