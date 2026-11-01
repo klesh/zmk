@@ -39,4 +39,21 @@
             , <&key_physical_attrs 100 100  100  100       0     0     0>
             ;
     };
+
+    // The two layouts arrange the same logical key positions differently on the
+    // PCB, so map them explicitly by transform position instead of by X/Y.
+    position_map {
+        compatible = "zmk,physical-layout-position-map";
+        complete;
+
+        ballkey_default_map: default {
+            physical-layout = <&ballkey_clunky_physical_layout>;
+            positions = <0 1 2 3>;
+        };
+
+        ballkey_left_map: left {
+            physical-layout = <&ballkey_clunky_physical_layout_left>;
+            positions = <0 1 2 3>;
+        };
+    };
 };
