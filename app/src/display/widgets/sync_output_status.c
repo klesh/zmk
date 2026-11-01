@@ -19,6 +19,9 @@ static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
 static struct zmk_sync_output_state get_state(const zmk_event_t *eh) {
     const struct zmk_sync_output_state *ev = as_zmk_sync_output_state(eh);
+    if (ev == NULL) {
+        return (struct zmk_sync_output_state){0};
+    }
     return *ev;
     // return (struct zmk_sync_output_state){.selected_endpoint = ev->selected_endpoint,
     //                                       .active_profile_connected =

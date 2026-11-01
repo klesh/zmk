@@ -37,7 +37,10 @@ static void layer_status_update_cb(struct zmk_sync_layer_state state) {
 }
 
 static struct zmk_sync_layer_state layer_status_get_state(const zmk_event_t *eh) {
-    struct zmk_sync_layer_state *ev = as_zmk_sync_layer_state(eh);
+    const struct zmk_sync_layer_state *ev = as_zmk_sync_layer_state(eh);
+    if (ev == NULL) {
+        return (struct zmk_sync_layer_state){0};
+    }
     return *ev;
     // return (struct zmk_sync_layer_state){.index = evt->layer, .label = ""};
 }

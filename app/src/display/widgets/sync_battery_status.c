@@ -58,6 +58,9 @@ void sync_battery_status_update_cb(struct zmk_sync_battery_state state) {
 
 static struct zmk_sync_battery_state sync_battery_status_get_state(const zmk_event_t *eh) {
     const struct zmk_sync_battery_state *ev = as_zmk_sync_battery_state(eh);
+    if (ev == NULL) {
+        return (struct zmk_sync_battery_state){0};
+    }
     return *ev;
 }
 
