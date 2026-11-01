@@ -1,0 +1,14 @@
+/*
+ * Shared pskeeb5 3x6 hardware. The 3x6 half adds one more column to each
+ * side, so the overlays supply six column GPIOs instead of five.
+ */
+
+#include "../pskeeb5/pskeeb5_common.dtsi"
+#include "pskeeb5_3x6_layouts.dtsi"
+
+/ {
+    chosen {
+        zmk,kscan = &kscan0;
+        zmk,physical-layout = &pskeeb5_3x6_physical_layout;
+    };
+};

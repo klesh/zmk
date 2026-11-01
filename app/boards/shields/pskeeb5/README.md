@@ -1,5 +1,8 @@
 # pskeeb5
 
+This shield is the 3x5 layout. For the 3x6 variant (one extra column per half),
+see [`pskeeb5_3x6`](../pskeeb5_3x6/).
+
 ## One-line build
 
 From the workspace root (the directory containing `.west`):

@@ -1,0 +1,13 @@
+file_format: "1"
+id: pskeeb5_3x6
+name: pskeeb5 3x6
+type: shield
+url: https://github.com/klesh/pskeeb
+requires: [pro_micro]
+exposes: [i2c_oled]
+features:
+  - keys
+  - display
+siblings:
+  - pskeeb5_3x6_left
+  - pskeeb5_3x6_right
