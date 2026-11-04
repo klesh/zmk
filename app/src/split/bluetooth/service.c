@@ -46,7 +46,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #endif // IS_ENABLED(CONFIG_ZMK_SYNC_BATTERY)
 
 #if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
-#include <zmk/events/activity_state_changed.h>
+#include <zmk/activity.h>
 #endif
 
 #if ZMK_KEYMAP_HAS_SENSORS
@@ -125,8 +125,9 @@ static void split_svc_sync_output_work_callback(struct k_work *work) {
     LOG_DBG("Sync output state");
     raise_zmk_sync_output_state(sync_output_state);
 #if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
-    raise_zmk_activity_state_changed(
-        (struct zmk_activity_state_changed){.state = ZMK_ACTIVITY_ACTIVE});
+    // Synced state means the other half is in use. Note it as real activity so the
+    // idle timer restarts and can blank this half's display again later.
+    zmk_activity_note_activity();
 #endif
 }
 
@@ -153,8 +154,9 @@ static void split_svc_sync_layer_work_callback(struct k_work *work) {
     LOG_DBG("Sync layer state");
     raise_zmk_sync_layer_state(sync_layer_state);
 #if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
-    raise_zmk_activity_state_changed(
-        (struct zmk_activity_state_changed){.state = ZMK_ACTIVITY_ACTIVE});
+    // Synced state means the other half is in use. Note it as real activity so the
+    // idle timer restarts and can blank this half's display again later.
+    zmk_activity_note_activity();
 #endif
 }
 
@@ -179,10 +181,9 @@ static struct zmk_sync_battery_state sync_battery_state = {0};
 static void split_svc_sync_battery_work_callback(struct k_work *work) {
     LOG_DBG("Sync battery state");
     raise_zmk_sync_battery_state(sync_battery_state);
-#if IS_ENABLED(CONFIG_ZMK_DISPLAY_BLANK_ON_IDLE)
-    raise_zmk_activity_state_changed(
-        (struct zmk_activity_state_changed){.state = ZMK_ACTIVITY_ACTIVE});
-#endif
+    // Battery/charging state is not user activity, so don't wake the display for it. The
+    // central also pushes it on USB notifications, e.g. when the host suspends, which would
+    // otherwise light up this half's display long after the keyboard went idle.
 }
 
 static K_WORK_DEFINE(split_svc_sync_battery_work, split_svc_sync_battery_work_callback);
