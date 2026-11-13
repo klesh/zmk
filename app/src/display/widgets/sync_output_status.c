@@ -35,22 +35,23 @@ static void set_status_symbol(lv_obj_t *label, struct zmk_sync_output_state stat
     enum zmk_transport transport = state.selected_endpoint.transport;
     bool connected = transport != ZMK_TRANSPORT_NONE;
 
-    // If we aren't connected, show what we're *trying* to connect to.
-    if (!connected) {
-        transport = state.preferred_transport;
-    }
-
     switch (transport) {
     case ZMK_TRANSPORT_USB:
         strcat(text, LV_SYMBOL_USB);
-        if (!connected) {
-            strcat(text, " " LV_SYMBOL_CLOSE);
-        }
         break;
-    case ZMK_TRANSPORT_BLE: {
+    case ZMK_TRANSPORT_BLE:
+    default: {
         uint8_t profile_index = state.selected_endpoint.transport == ZMK_TRANSPORT_BLE
                                     ? state.selected_endpoint.ble.profile_index
                                     : state.active_profile_index;
+
+        // When not connected to a selected endpoint, show the active BLE profile state so
+        // profile switching (open/gear, bonded/disconnected/cross) remains visible.
+        if (connected && transport != ZMK_TRANSPORT_BLE) {
+            strcat(text, LV_SYMBOL_CLOSE);
+            break;
+        }
+
         if (state.active_profile_bonded) {
             if (state.active_profile_connected) {
                 snprintf(text, sizeof(text), LV_SYMBOL_WIFI " %i " LV_SYMBOL_OK, profile_index + 1);
@@ -64,10 +65,6 @@ static void set_status_symbol(lv_obj_t *label, struct zmk_sync_output_state stat
         }
         break;
     }
-    case ZMK_TRANSPORT_NONE:
-    default:
-        strcat(text, LV_SYMBOL_CLOSE);
-        break;
     }
 
     lv_label_set_text(label, text);
