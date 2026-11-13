@@ -233,6 +233,11 @@ static void clear_profile_bond(uint8_t profile) {
 void zmk_ble_clear_bonds(void) {
     LOG_DBG("zmk_ble_clear_bonds()");
 
+    int err = zmk_ble_prof_disconnect(active_profile);
+    if (err == 0) {
+        k_sleep(K_MSEC(100));
+    }
+
     clear_profile_bond(active_profile);
     update_advertising();
 };
@@ -240,8 +245,9 @@ void zmk_ble_clear_bonds(void) {
 void zmk_ble_clear_all_bonds(void) {
     LOG_DBG("zmk_ble_clear_all_bonds()");
 
-    // Unpair all profiles
+    // Disconnect and unpair all profiles
     for (int i = 0; i < ZMK_BLE_PROFILE_COUNT; i++) {
+        zmk_ble_prof_disconnect(i);
         clear_profile_bond(i);
     }
 
