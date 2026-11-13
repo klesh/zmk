@@ -12,6 +12,8 @@
 
 struct zmk_sync_output_state {
     struct zmk_endpoint_instance selected_endpoint;
+    enum zmk_transport preferred_transport;
+    uint8_t active_profile_index;
     bool active_profile_connected;
     bool active_profile_bonded;
 };

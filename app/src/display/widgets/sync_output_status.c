@@ -32,23 +32,41 @@ static struct zmk_sync_output_state get_state(const zmk_event_t *eh) {
 static void set_status_symbol(lv_obj_t *label, struct zmk_sync_output_state state) {
     char text[20] = {};
 
-    switch (state.selected_endpoint.transport) {
+    enum zmk_transport transport = state.selected_endpoint.transport;
+    bool connected = transport != ZMK_TRANSPORT_NONE;
+
+    // If we aren't connected, show what we're *trying* to connect to.
+    if (!connected) {
+        transport = state.preferred_transport;
+    }
+
+    switch (transport) {
     case ZMK_TRANSPORT_USB:
         strcat(text, LV_SYMBOL_USB);
+        if (!connected) {
+            strcat(text, " " LV_SYMBOL_CLOSE);
+        }
         break;
-    case ZMK_TRANSPORT_BLE:
+    case ZMK_TRANSPORT_BLE: {
+        uint8_t profile_index = state.selected_endpoint.transport == ZMK_TRANSPORT_BLE
+                                    ? state.selected_endpoint.ble.profile_index
+                                    : state.active_profile_index;
         if (state.active_profile_bonded) {
             if (state.active_profile_connected) {
-                snprintf(text, sizeof(text), LV_SYMBOL_WIFI " %i " LV_SYMBOL_OK,
-                         state.selected_endpoint.ble.profile_index + 1);
+                snprintf(text, sizeof(text), LV_SYMBOL_WIFI " %i " LV_SYMBOL_OK, profile_index + 1);
             } else {
                 snprintf(text, sizeof(text), LV_SYMBOL_WIFI " %i " LV_SYMBOL_CLOSE,
-                         state.selected_endpoint.ble.profile_index + 1);
+                         profile_index + 1);
             }
         } else {
             snprintf(text, sizeof(text), LV_SYMBOL_WIFI " %i " LV_SYMBOL_SETTINGS,
-                     state.selected_endpoint.ble.profile_index + 1);
+                     profile_index + 1);
         }
+        break;
+    }
+    case ZMK_TRANSPORT_NONE:
+    default:
+        strcat(text, LV_SYMBOL_CLOSE);
         break;
     }
 
